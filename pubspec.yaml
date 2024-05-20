@@ -1,0 +1,25 @@
+name: oilsavings
+description: "A new Flutter project."
+publish_to: 'none'
+version: 0.1.0
+
+environment:
+  sdk: '>=3.3.4 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  animate_do: ^3.3.4
+  email_validator: ^2.1.17
+  flutter_lints: ^3.0.0
+  flutter_secure_storage: ^9.2.1
+  flutter_test:
+    sdk: flutter
+  font_awesome_icon_class: ^0.0.6
+  http: ^1.2.1
+  loading_animation_widget: ^1.2.1
+
+flutter:
+  uses-material-design: true
