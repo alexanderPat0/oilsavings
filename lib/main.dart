@@ -26,19 +26,6 @@ class OilSavings extends StatelessWidget {
   }
 }
 
-class LoadingScreen extends StatelessWidget {
-  const LoadingScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(
-        child: CircularProgressIndicator(),
-      ),
-    );
-  }
-}
-
 class ErrorScreen extends StatelessWidget {
   final String error;
 
