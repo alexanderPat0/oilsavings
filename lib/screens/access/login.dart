@@ -181,8 +181,17 @@ class _LoginPageState extends State<LoginPage> {
                         duration: const Duration(milliseconds: 1600),
                         child: MaterialButton(
                           onPressed: () {
-                            // Implementa la lógica de inicio de sesión aquí
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const MainScreen(),
+                              ),
+                            );
                           },
+
+                          // () {
+                          //   // Implementa la lógica de inicio de sesión aquí
+                          // },
                           height: 50,
                           color: Colors.orange[900],
                           shape: RoundedRectangleBorder(
