@@ -45,6 +45,8 @@ import 'package:google_maps_webservice/places.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class MapScreen extends StatefulWidget {
+  const MapScreen({Key? key}) : super(key: key);
+ 
   @override
   _MapScreenState createState() => _MapScreenState();
 }
