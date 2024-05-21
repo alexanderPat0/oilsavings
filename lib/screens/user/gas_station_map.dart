@@ -25,7 +25,7 @@ dependencies:
 Step 2: Get API keys
 Get your API keys from the Google Cloud Console and enable the Google Maps SDK for Android/iOS and Google Places API.
 
-Step 3: Update Android and iOS configurations
+Step 3: Update Android nconfigurations
 Android
 Add your API key to the android/app/src/main/AndroidManifest.xml:
 
@@ -155,6 +155,10 @@ class _MapScreenState extends State<MapScreen> {
 }
 
 /*
+
+
+https://codelabs.developers.google.com/codelabs/google-maps-in-flutter?hl=es-419#3    <----- Implementar Google Maps en mi App de Flutter
+
 
 Para solicitar permisos de ubicación y manejar el caso en que la ubicación no esté activada, puedes usar el paquete permission_handler para Flutter. Este paquete permite solicitar permisos y verificar el estado de los permisos en tiempo de ejecución.
 
