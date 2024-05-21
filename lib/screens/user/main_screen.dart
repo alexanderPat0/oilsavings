@@ -46,7 +46,7 @@ class _MainScreenState extends State<MainScreen> {
                       color: Colors.orange.shade800,
                       shape: BoxShape.circle,
                     ),
-                    child: Center(
+                    child: const Center(
                       child: Text(
                         'Main',
                         style: TextStyle(
