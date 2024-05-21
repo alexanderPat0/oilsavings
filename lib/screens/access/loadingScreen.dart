@@ -32,8 +32,17 @@ class _LoadingScreenState extends State<LoadingScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 20),
         height: MediaQuery.of(context).size.height,
         width: MediaQuery.of(context).size.width,
-        decoration: BoxDecoration(gradient: ThemeColors.getGradient()),
-        child: Column(
+        decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              colors: [
+                Colors.orange.shade900,
+                Colors.orange.shade800,
+                Colors.orange.shade400,
+              ],
+            ),
+          ),        
+          child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -44,7 +53,7 @@ class _LoadingScreenState extends State<LoadingScreen> {
                 style: TextStyle(
                   fontSize: 40,
                   fontWeight: FontWeight.w700,
-                  color: Colors.lightBlue,
+                  color: Color.fromARGB(255, 0, 17, 255),
                 ),
                 children: [
                   TextSpan(
@@ -57,7 +66,7 @@ class _LoadingScreenState extends State<LoadingScreen> {
                   TextSpan(
                     text: 'S',
                     style: TextStyle(
-                      color: Colors.blue,
+                      color: Color.fromARGB(255, 0, 17, 255),
                       fontSize: 40,
                     ),
                   ),

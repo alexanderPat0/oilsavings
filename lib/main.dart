@@ -38,7 +38,7 @@ class ErrorScreen extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       home: Scaffold(
         body: Center(
-          child: Text('Error initializing Firebase: $error'),
+          child: Text('Error initializing application: $error'),
         ),
       ),
     );
