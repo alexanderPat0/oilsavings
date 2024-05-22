@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'screens/access/loadingScreen.dart';
-
-import 'package:flutter/material.dart';
+// import 'package:flutter_google_places_sdk/flutter_google_places_sdk.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
