@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
-
-import 'package:oilsavings/screens/access/login.dart';
 import 'package:permission_handler/permission_handler.dart';
+
+import 'package:oilsavings/screens/access/welcome.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({Key? key}) : super(key: key);
@@ -15,42 +15,49 @@ class _MainScreenState extends State<MainScreen> {
   @override
   void initState() {
     super.initState();
-    _requestLocationPermission();
+    _checkPermissionsAndService();
   }
 
-  void _requestLocationPermission() async {
+  void _checkPermissionsAndService() async {
     var status = await Permission.locationWhenInUse.status;
     if (!status.isGranted) {
       await Permission.locationWhenInUse.request();
     }
 
-    // Check if permissions were granted after the request
-    if (await Permission.locationWhenInUse.isGranted) {
-      // Permission granted, proceed to get location
-      _getCurrentLocation();
+    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      // Prompt the user to enable the location services.
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text("Location Services Disabled"),
+            content: Text("Please enable location services."),
+            actions: <Widget>[
+              TextButton(
+                child: Text("OK"),
+                onPressed: () => Navigator.of(context).pop(),
+              ),
+            ],
+          );
+        },
+      );
+    }
+  }
+
+  void _handleButtonPress(BuildContext context, VoidCallback onSuccess) async {
+    if (await Permission.locationWhenInUse.isGranted &&
+        await Geolocator.isLocationServiceEnabled()) {
+      onSuccess();
     } else {
-      // Handle the situation when the user denies the permission
-      print("Location permission denied.");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+              "Para usar la aplicación debes permitir el uso de la ubicación y asegurar que el servicio de ubicación esté activo."),
+          duration: Duration(seconds: 5),
+        ),
+      );
     }
-  }
-
-  void _getCurrentLocation() async {
-    try {
-      Position position = await Geolocator.getCurrentPosition(
-          desiredAccuracy: LocationAccuracy.high);
-      print("Location: ${position.latitude}, ${position.longitude}");
-      // Here you could update the state or perform additional operations with the location
-    } catch (e) {
-      print("Error getting location: $e");
-    }
-  }
-
-  void _logout(BuildContext context) {
-    // Implementa la lógica de cerrar sesión aquí
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => const LoginPage()),
-    );
   }
 
   @override
@@ -59,20 +66,19 @@ class _MainScreenState extends State<MainScreen> {
       body: SafeArea(
         child: Stack(
           children: [
-            // Botón de cerrar sesión en la esquina superior izquierda
             Positioned(
               top: 10,
               left: 10,
               child: IconButton(
                 icon: const Icon(Icons.logout),
-                onPressed: () => _logout(context),
+                onPressed: () =>
+                    _handleButtonPress(context, () => _logout(context)),
               ),
             ),
             Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // Botón grande en el centro
                   Container(
                     margin: const EdgeInsets.all(10),
                     width: 100,
@@ -81,25 +87,27 @@ class _MainScreenState extends State<MainScreen> {
                       color: Colors.orange.shade800,
                       shape: BoxShape.circle,
                     ),
-                    child: const Center(
-                      child: Text(
-                        'Main',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
+                    child: Center(
+                      child: TextButton(
+                        onPressed: () => _handleButtonPress(context, () {}),
+                        child: const Text(
+                          'Main',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                     ),
                   ),
-                  // Fila de botones más pequeños debajo del botón grande
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      _buildSmallButton(context, 'Option 1'),
-                      _buildSmallButton(context, 'Option 2'),
-                      _buildSmallButton(context, 'Option 3'),
-                      _buildSmallButton(context, 'Option 4'),
+                      _buildSmallButton(context, 'Option 1', () {}),
+                      _buildSmallButton(context, 'Option 2', () {}),
+                      _buildSmallButton(context, 'Option 3', () {}),
+                      _buildSmallButton(context, 'Option 4', () {}),
                     ],
                   ),
                 ],
@@ -111,8 +119,8 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 
-  // Función para construir los botones pequeños
-  Widget _buildSmallButton(BuildContext context, String label) {
+  Widget _buildSmallButton(
+      BuildContext context, String label, VoidCallback onPress) {
     return Container(
       margin: const EdgeInsets.all(10),
       width: 60,
@@ -122,15 +130,25 @@ class _MainScreenState extends State<MainScreen> {
         shape: BoxShape.circle,
       ),
       child: Center(
-        child: Text(
-          label,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 12,
+        child: TextButton(
+          onPressed: () => _handleButtonPress(context, onPress),
+          child: Text(
+            label,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 12,
+            ),
+            textAlign: TextAlign.center,
           ),
-          textAlign: TextAlign.center,
         ),
       ),
+    );
+  }
+
+  void _logout(BuildContext context) {
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => const WelcomePage()),
     );
   }
 }
