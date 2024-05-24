@@ -1,80 +1,58 @@
-import 'dart:ffi';
-
 import 'package:flutter/material.dart';
 
-class GasStations {
+class GasStationModel {
+  bool? status;
+  List<GasStationData>? results;
+  String? htmlAttributions;
 
-  bool? success;
-  List<GasStationData>? data;
-  String? message;
+  GasStationModel({this.status, this.results, this.htmlAttributions});
 
-  GasStations({this.success, this.data, this.message});
-
-  GasStations.fromJson(Map<String, dynamic> json) {
-    success = json['success'];
-    if (json['data'] != null) {
-      data = <GasStationData>[];
-      json['data'].forEach((v) {
-        data!.add(GasStationData.fromJson(v));
-      });
+  GasStationModel.fromJson(Map<String, dynamic> json) {
+    status = json['status'] == "OK";
+    htmlAttributions = json['html_attributions']?.join(", ");
+    if (json['results'] != null) {
+      results = List<GasStationData>.from(
+          json['results'].map((x) => GasStationData.fromJson(x)));
     }
-    message = json['message'];
-  }
-
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = <String, dynamic>{};
-    data['success'] = success;
-    if (this.data != null) {
-      data['data'] = this.data!.map((v) => v.toJson()).toList();
-    }
-    data['message'] = message;
-    return data;
   }
 }
 
 class GasStationData {
-  int? id;
-  String? company;
-  String? location;
-  int? valoration;
-  Map<String, int>? fuelPrices; // Map for key-value pairs
-  DateTime? createdAt;
-  DateTime? updatedAt;
+  String? businessStatus;
+  double? latitude;
+  double? longitude;
+  String? name;
+  bool? openNow;
+  String? placeId;
+  double? rating;
+  int? userRatingsTotal;
+  String? vicinity;
 
   GasStationData({
-    this.id,
-    this.company,
-    this.location,
-    this.valoration,
-    this.fuelPrices,
-    this.createdAt,
-    this.updatedAt,
+    this.businessStatus,
+    this.latitude,
+    this.longitude,
+    this.name,
+    this.openNow,
+    this.placeId,
+    this.rating,
+    this.userRatingsTotal,
+    this.vicinity,
   });
 
-
-   GasStationData.fromJson(Map<String, dynamic> json) {
-    id = json['id'];
-    company = json['company'];
-    location = json['location'];
-    valoration = json['valoration'];
-    // Convert fuelPrices from Map<String, dynamic> to Map<String, int>
-    if (json['fuelPrices'] != null) {
-      fuelPrices = Map<String, int>.from(json['fuelPrices']);
-    }
-    createdAt = json['created_at'] != null ? DateTime.parse(json['created_at']) : null;
-    updatedAt = json['updated_at'] != null ? DateTime.parse(json['updated_at']) : null;
+  GasStationData.fromJson(Map<String, dynamic> json) {
+    businessStatus = json['business_status'] as String?;
+    latitude = (json['geometry']['location']['lat'] as num?)?.toDouble();
+    longitude = (json['geometry']['location']['lng'] as num?)?.toDouble();
+    name = json['name'] as String?;
+    openNow = json['opening_hours'] != null
+        ? json['opening_hours']['open_now'] as bool?
+        : null;
+    placeId = json['place_id'] as String?;
+    rating = (json['rating'] as num?)?.toDouble();
+    userRatingsTotal = json['user_ratings_total'] != null
+        ? json['user_ratings_total'] as int?
+        : null;
+    vicinity = json['vicinity'] as String?;
   }
-
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = <String, dynamic>{};
-    data['id'] = id;
-    data['company'] = company;
-    data['location'] = location;
-    data['valoration'] = valoration;
-    data['fuelPrices'] = fuelPrices;
-    data['created_at'] = createdAt?.toIso8601String();
-    data['updated_at'] = updatedAt?.toIso8601String();
-    return data;
-  }
-
 }

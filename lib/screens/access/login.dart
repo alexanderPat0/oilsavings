@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_icon_class/font_awesome_icon_class.dart';
 import 'signup.dart';
 import '../user/main_screen.dart';
-import '../../themes/themeColors.dart';
 import '../../services/UserService.dart';
 import 'package:animate_do/animate_do.dart';
 

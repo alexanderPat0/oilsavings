@@ -26,4 +26,8 @@ dev_dependencies:
     sdk: flutter
 
 flutter:
+
   uses-material-design: true
+  assets:
+    - imgs/
+    - imgs/gas_station_img/

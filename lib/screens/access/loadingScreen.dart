@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'welcome.dart';
 import '../user/main_screen.dart'; // Asumiendo que tienes una pantalla principal llamada MainScreen
-import '../../themes/themeColors.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 
 class LoadingScreen extends StatefulWidget {

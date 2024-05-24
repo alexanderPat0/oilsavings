@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:oilsavings/screens/user/gas_station_map.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 import 'package:oilsavings/screens/access/welcome.dart';
@@ -12,10 +13,23 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
+  double _currentSliderValue = 2; // Valor inicial del slider
+  Position? _currentPosition;
+
   @override
   void initState() {
     super.initState();
     _checkPermissionsAndService();
+    _getCurrentLocation();
+  }
+
+  Future<Position?> _getCurrentLocation() async {
+    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (serviceEnabled) {
+      return await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.high);
+    }
+    return null;
   }
 
   void _checkPermissionsAndService() async {
@@ -31,11 +45,11 @@ class _MainScreenState extends State<MainScreen> {
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
-            title: Text("Location Services Disabled"),
-            content: Text("Please enable location services."),
+            title: const Text("Location Services Disabled"),
+            content: const Text("Please enable location services."),
             actions: <Widget>[
               TextButton(
-                child: Text("OK"),
+                child: const Text("OK"),
                 onPressed: () => Navigator.of(context).pop(),
               ),
             ],
@@ -48,12 +62,34 @@ class _MainScreenState extends State<MainScreen> {
   void _handleButtonPress(BuildContext context, VoidCallback onSuccess) async {
     if (await Permission.locationWhenInUse.isGranted &&
         await Geolocator.isLocationServiceEnabled()) {
-      onSuccess();
+      _currentPosition =
+          await _getCurrentLocation(); // Get the current position and wait for it
+      if (_currentPosition != null) {
+        print(
+            '\n\nCurrent Latitude:  ${_currentPosition!.latitude}, Longitude: ${_currentPosition!.longitude}, Radio: ${(_currentSliderValue * 1000).toInt()}');
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => GasStationList(
+              latitude: _currentPosition!.latitude,
+              longitude: _currentPosition!.longitude,
+              radius: (_currentSliderValue * 1000).toInt(),
+            ),
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Location data is not available. Please try again."),
+            duration: Duration(seconds: 5),
+          ),
+        );
+      }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+        const SnackBar(
           content: Text(
-              "Para usar la aplicación debes permitir el uso de la ubicación y asegurar que el servicio de ubicación esté activo."),
+              "To use the app you must allow it to access your location and have the location service active."),
           duration: Duration(seconds: 5),
         ),
       );
@@ -109,6 +145,21 @@ class _MainScreenState extends State<MainScreen> {
                       _buildSmallButton(context, 'Option 3', () {}),
                       _buildSmallButton(context, 'Option 4', () {}),
                     ],
+                  ),
+                  const Center(
+                    child: Text('Searching Range (in km):'),
+                  ),
+                  Slider(
+                    value: _currentSliderValue,
+                    min: 1,
+                    max: 5,
+                    divisions: 4,
+                    label: _currentSliderValue.round().toString(),
+                    onChanged: (double value) {
+                      setState(() {
+                        _currentSliderValue = value;
+                      });
+                    },
                   ),
                 ],
               ),

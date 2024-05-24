@@ -4,8 +4,6 @@ import 'login.dart';
 import '../../services/UserService.dart';
 import 'package:animate_do/animate_do.dart';
 
-import '../../themes/themeColors.dart';
-
 final TextEditingController passwordController = TextEditingController();
 final TextEditingController cpasswordController = TextEditingController();
 
@@ -14,13 +12,8 @@ class TextFieldDemo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: ThemeColors.getGradient(),
-        ),
-        child: const TextFormFieldDemo(),
-      ),
+    return const Scaffold(
+      body: TextFormFieldDemo(),
     );
   }
 }
