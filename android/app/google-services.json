@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "160488075328",
+    "firebase_url": "https://oilsavings-default-rtdb.europe-west1.firebasedatabase.app",
+    "project_id": "oilsavings",
+    "storage_bucket": "oilsavings.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:160488075328:android:c9bf9ae004b64a7fa6afa5",
+        "android_client_info": {
+          "package_name": "com.example.oilsavings"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "160488075328-obqgstf5q11juqedbrmi20159kdofke2.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC4EClbyk-lhTAV0qURaU8uUdHxSeiMuhA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "160488075328-9u9m0e8miikuqj84pbs05ri8im870u15.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
