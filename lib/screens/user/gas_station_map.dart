@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
+import 'package:oilsavings/models/FuelDataModel.dart';
 import 'package:oilsavings/models/GasStationModel.dart';
 import 'package:oilsavings/screens/user/main_screen.dart';
 
@@ -24,6 +25,8 @@ class GasStationList extends StatefulWidget {
 class _GasStationListState extends State<GasStationList> {
   List<GasStationData> _stations = [];
 
+  final apiKey = 'AIzaSyBmaXLlR-Pfgm1sfn-8oALHvu9Zf1fWT7k';
+
   @override
   void initState() {
     super.initState();
@@ -31,9 +34,7 @@ class _GasStationListState extends State<GasStationList> {
   }
 
   Future<void> _fetchGasStations() async {
-    const apiKey =
-        'AIzaSyAYANPUfV6P03R5Nfbt8NiMqhJ5MCyt3rU'; // Asegúrate de usar una clave API válida aquí
-    final url = 'https://maps.googleapis.com/maps/api/place/nea-rbysearch/json'
+    final url = 'https://maps.googleapis.com/maps/api/place/nearbysearch/json'
         '?location=${widget.latitude},${widget.longitude}'
         '&radius=${widget.radius}'
         '&type=gas_station'
@@ -41,7 +42,6 @@ class _GasStationListState extends State<GasStationList> {
 
     try {
       final response = await http.get(Uri.parse(url));
-      print("Response body: ${response.body}");
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         final List<dynamic> results = data['results'];
@@ -49,12 +49,38 @@ class _GasStationListState extends State<GasStationList> {
           _stations =
               results.map((json) => GasStationData.fromJson(json)).toList();
         });
-        print("Gas stations loaded: ${_stations.length}");
+        // Fetch details including fuel prices
+        _fetchGasOptionsPrices();
       } else {
         throw Exception('Failed to load gas stations');
       }
     } catch (error) {
       print('Error fetching gas stations: $error');
+    }
+  }
+
+  Future<void> _fetchGasOptionsPrices() async {
+    for (var station in _stations) {
+      final url =
+          'https://places.googleapis.com/v1/places/${station.placeId}&fields=price_level&key=$apiKey';
+
+      try {
+        final response = await http.get(Uri.parse(url));
+        if (response.statusCode == 200) {
+          final data = json.decode(response.body);
+          final details = data['result'];
+          setState(() {
+            station.fuelPrices = (details['fuelOptions']['fuelPrices'] as List)
+                .map((f) => FuelPrice.fromJson(f))
+                .toList();
+          });
+        } else {
+          print(
+              'Failed to load details for station  ${response.statusCode}: ${response.body}');
+        }
+      } catch (error) {
+        print('Error fetching fuel prices: $error');
+      }
     }
   }
 
@@ -93,24 +119,7 @@ class _GasStationListState extends State<GasStationList> {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.start,
                           children: [
-                            _buildOpenStatus(station.openNow),
-                            Text(
-                                'Rating: ${station.rating} (${station.userRatingsTotal} reviews)'),
-                            const SizedBox(height: 20),
-                            Align(
-                              alignment: Alignment.centerLeft,
-                              child: OutlinedButton(
-                                onPressed: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => const MainScreen(),
-                                    ),
-                                  );
-                                },
-                                child: const Text('More Info'),
-                              ),
-                            ),
+                            _buildFuelPriceList(station.fuelPrices),
                           ],
                         ),
                       ),
@@ -122,13 +131,15 @@ class _GasStationListState extends State<GasStationList> {
     );
   }
 
-  Widget _buildOpenStatus(bool? isOpen) {
-    if (isOpen == null) {
-      return const Text('Open status: Unknown',
-          style: TextStyle(color: Colors.grey));
+  Widget _buildFuelPriceList(List<FuelPrice>? prices) {
+    if (prices == null || prices.isEmpty) {
+      return const Text("No fuel price information available");
     } else {
-      return Text('Open Now: ${isOpen ? "Yes" : "No"}',
-          style: TextStyle(color: isOpen ? Colors.green : Colors.red));
+      return Column(
+        children: prices
+            .map((price) => Text('${price.type}: ${price.price}'))
+            .toList(),
+      );
     }
   }
 }
