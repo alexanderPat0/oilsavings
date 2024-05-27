@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_icon_class/font_awesome_icon_class.dart';
 import 'signup.dart';
@@ -21,6 +22,27 @@ class _LoginPageState extends State<LoginPage> {
 
   void simpleFunction() {
     print('Hello from simpleFunction!');
+  }
+
+  void _handleSubmitted() async {
+    try {
+      final credential = await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: emailController.text,
+        password: passwordController.text,
+      );
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'user-not-found') {
+        print('No user found for that email.');
+      } else if (e.code == 'wrong-password') {
+        print('Wrong password provided for that user.');
+      }
+    }
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const MainScreen(),
+      ),
+    );
   }
 
   @override
@@ -180,12 +202,7 @@ class _LoginPageState extends State<LoginPage> {
                         duration: const Duration(milliseconds: 1600),
                         child: MaterialButton(
                           onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const MainScreen(),
-                              ),
-                            );
+                            _handleSubmitted();
                           },
 
                           // () {

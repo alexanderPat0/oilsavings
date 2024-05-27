@@ -1,4 +1,5 @@
 import 'package:email_validator/email_validator.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'login.dart';
 import '../../services/UserService.dart';
@@ -182,7 +183,7 @@ class TextFormFieldDemoState extends State<TextFormFieldDemo>
   final GlobalKey<FormFieldState<String>> _passwordFieldKey =
       GlobalKey<FormFieldState<String>>();
 
-  void _handleSubmitted() {
+  Future<void> _handleSubmitted() async{
     final form = _formKey.currentState!;
     if (!form.validate()) {
       _autoValidateModeIndex.value =
@@ -191,17 +192,25 @@ class TextFormFieldDemoState extends State<TextFormFieldDemo>
     } else {
       // form.save();
 
-      String? name = nameController.text;
       String? mail = emailController.text;
       String? password = passwordController.text;
-      String? cpassword = passwordController.text;
 
-      UserService userService = UserService();
-      userService.register(name, mail, password, cpassword);
-
-      showInSnackBarSuccess(
-          'Registered.\nCheck your email to verify your account');
-
+// Suggested code may be subject to a license. Learn more: ~LicenseLog:1122435057.
+// Suggested code may be subject to a license. Learn more: ~LicenseLog:3147474789.
+      try {
+  final credential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+    email: mail,
+    password: password,
+  );
+} on FirebaseAuthException catch (e) {
+  if (e.code == 'weak-password') {
+    print('The password provided is too weak.');
+  } else if (e.code == 'email-already-in-use') {
+    print('The account already exists for that email.');
+  }
+} catch (e) {
+  print(e);
+}
       Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => const LoginPage()),

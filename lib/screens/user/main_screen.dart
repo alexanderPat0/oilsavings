@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:oilsavings/screens/user/gas_station_map.dart';
@@ -58,6 +59,8 @@ class _MainScreenState extends State<MainScreen> {
       );
     }
   }
+
+
 
   void _handleButtonPress(BuildContext context, VoidCallback onSuccess) async {
     if (await Permission.locationWhenInUse.isGranted &&
@@ -196,7 +199,8 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 
-  void _logout(BuildContext context) {
+  void _logout(BuildContext context) async {
+    await FirebaseAuth.instance.signOut();
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(builder: (context) => const WelcomePage()),
