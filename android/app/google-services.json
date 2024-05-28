@@ -15,6 +15,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "160488075328-3h90ek840p38lm4eu95qv40te7sh2h8g.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.oilsavings",
+            "certificate_hash": "c1f31e85f00bb5961adc785c4df39b9ae588ebac"
+          }
+        },
+        {
           "client_id": "160488075328-obqgstf5q11juqedbrmi20159kdofke2.apps.googleusercontent.com",
           "client_type": 3
         }
