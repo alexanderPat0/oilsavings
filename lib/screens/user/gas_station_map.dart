@@ -31,62 +31,30 @@ class _GasStationListState extends State<GasStationList> {
   void initState() {
     super.initState();
     _fetchGasStations();
-    // _fetchPrices();
+    _fetchPrices();
   }
 
-  // void _fetchPrices() async {
-  //   final parser = await Chaleno().load('https://www.dieselogasolina.com');
-  //   if (parser != null) {
-  //     final elements =
-  //         parser.getElementsByClassName('center por_marcas size-100p');
-  //     final elements1 =
-  //         elements[1].getElementsByClassName('center por_marcas size-100p');
-  //     if (elements != null && elements.isNotEmpty) {
-  //       final tableRows = elements[0].getElementsByTagName('tr');
-  //       for (var row in tableRows) {
-  //         final cells = row.getElementsByTagName('td');
-  //         if (cells.isNotEmpty) {
-  //           String fuelType = cells[0].text.trim();
-  //           for (int i = 1; i < cells.length; i++) {
-  //             String brand = getBrandName(i);
-  //             double price = double.tryParse(cells[i]
-  //                     .text
-  //                     .trim()
-  //                     .replaceAll('€/l', '')
-  //                     .replaceAll(',', '.')) ??
-  //                 0.0;
-  //             if (!prices.containsKey(brand)) {
-  //               prices[brand] = {};
-  //             }
-  //             prices[brand]![fuelType] = price;
-  //           }
-  //         }
-  //       }
-  //       setState(() {});
-  //     }
-  //   }
-  // }
-
-  String getBrandName(int index) {
-    switch (index) {
-      case 1:
-        return 'Repsol';
-      case 2:
-        return 'Cepsa';
-      case 3:
-        return 'BP';
-      case 4:
-        return 'Shell';
-      case 5:
-        return 'Galp';
-      case 6:
-        return 'Alcampo';
-      case 7:
-        return 'Carrefour';
-      case 8:
-        return 'E.Leclerc';
-      default:
-        return 'Unknown';
+  void _fetchPrices() async {
+    final parser = await Chaleno().load('https://www.dieselogasolina.com');
+    if (parser != null) {
+      final rows = parser.querySelectorAll('table tbody tr');
+      for (var row in rows) {
+        final cells = row.querySelectorAll('td');
+        if (cells!.isNotEmpty) {
+          String fuelType = cells[0].text!.trim();
+          List<String> brands = ['Repsol', 'Cepsa', 'Shell', 'BP'];
+          for (int i = 1; i <= brands.length; i++) {
+            String brand = brands[i - 1];
+            double price = double.tryParse(
+                cells[i].text!.trim().replaceAll('€/l', '').replaceAll(',', '.')) ?? 0.0;
+            if (!prices.containsKey(brand)) {
+              prices[brand] = {};
+            }
+            prices[brand]![fuelType] = price;
+          }
+        }
+      }
+      setState(() {});
     }
   }
 
@@ -253,10 +221,6 @@ class _GasStationListState extends State<GasStationList> {
     if (name.toLowerCase().contains('cepsa')) return 'Cepsa';
     if (name.toLowerCase().contains('bp')) return 'BP';
     if (name.toLowerCase().contains('shell')) return 'Shell';
-    if (name.toLowerCase().contains('galp')) return 'Galp';
-    if (name.toLowerCase().contains('alcampo')) return 'Alcampo';
-    if (name.toLowerCase().contains('carrefour')) return 'Carrefour';
-    if (name.toLowerCase().contains('e.leclerc')) return 'E.Leclerc';
     return 'Unknown';
   }
 }
