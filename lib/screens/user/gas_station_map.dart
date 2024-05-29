@@ -5,6 +5,7 @@ import 'dart:convert';
 import 'package:oilsavings/models/FuelDataModel.dart';
 import 'package:oilsavings/models/GasStationModel.dart';
 import 'package:oilsavings/screens/user/main_screen.dart';
+import 'package:web_scraper/web_scraper.dart';
 
 class GasStationList extends StatefulWidget {
   final double latitude;
@@ -24,6 +25,8 @@ class GasStationList extends StatefulWidget {
 
 class _GasStationListState extends State<GasStationList> {
   List<GasStationData> _stations = [];
+  final webScraper = WebScraper('https://www.dieselogasolina.com');
+  Map<String, Map<String, double>> prices = {};
 
   final apiKey = 'AIzaSyBmaXLlR-Pfgm1sfn-8oALHvu9Zf1fWT7k';
 
@@ -31,8 +34,50 @@ class _GasStationListState extends State<GasStationList> {
   void initState() {
     super.initState();
     _fetchGasStations();
+    _fetchPrices();
   }
 
+   void _fetchPrices() async {
+    if (await webScraper.loadWebPage('/')) {
+      final tableRows = webScraper.getElement('table tbody tr', ['td']);
+      for (var row in tableRows) {
+        var cells = row['attributes']['td'];
+        String fuelType = cells[0]['title'];
+        for (int i = 1; i < cells.length; i++) {
+          String brand = getBrandName(i);
+          double price = double.tryParse(cells[i]['title'].replaceAll('€/l', '').replaceAll(',', '.')) ?? 0.0;
+          if (!prices.containsKey(brand)) {
+            prices[brand] = {};
+          }
+          prices[brand]![fuelType] = price;
+        }
+      }
+      setState(() {});
+    }
+  }
+
+  String getBrandName(int index) {
+    switch (index) {
+      case 1:
+        return 'Repsol';
+      case 2:
+        return 'Cepsa';
+      case 3:
+        return 'BP';
+      case 4:
+        return 'Shell';
+      case 5:
+        return 'Galp';
+      case 6:
+        return 'Alcampo';
+      case 7:
+        return 'Carrefour';
+      case 8:
+        return 'E.Leclerc';
+      default:
+        return 'Unknown';
+    }
+  }
   Future<void> _fetchGasStations() async {
     final url = 'https://maps.googleapis.com/maps/api/place/nearbysearch/json'
         '?location=${widget.latitude},${widget.longitude}'
@@ -49,8 +94,7 @@ class _GasStationListState extends State<GasStationList> {
           _stations =
               results.map((json) => GasStationData.fromJson(json)).toList();
         });
-        // Fetch details including fuel prices
-        _fetchGasOptionsPrices();
+    
       } else {
         throw Exception('Failed to load gas stations');
       }
@@ -58,31 +102,7 @@ class _GasStationListState extends State<GasStationList> {
       print('Error fetching gas stations: $error');
     }
   }
-
-  Future<void> _fetchGasOptionsPrices() async {
-    for (var station in _stations) {
-      final url =
-          'https://places.googleapis.com/v1/places/${station.placeId}&fields=price_level&key=$apiKey';
-
-      try {
-        final response = await http.get(Uri.parse(url));
-        if (response.statusCode == 200) {
-          final data = json.decode(response.body);
-          final details = data['result'];
-          setState(() {
-            station.fuelPrices = (details['fuelOptions']['fuelPrices'] as List)
-                .map((f) => FuelPrice.fromJson(f))
-                .toList();
-          });
-        } else {
-          print(
-              'Failed to load details for station  ${response.statusCode}: ${response.body}');
-        }
-      } catch (error) {
-        print('Error fetching fuel prices: $error');
-      }
-    }
-  }
+  
 
   @override
   Widget build(BuildContext context) {
@@ -108,7 +128,7 @@ class _GasStationListState extends State<GasStationList> {
                 } else {
                   img = "imgs/gas_station_img/default_station.png";
                 }
-                return Card(
+                  return Card(
                   child: ExpansionTile(
                     leading: Image.asset(img, width: 50, height: 50),
                     title: Text(station.name ?? 'Name not available'),
@@ -119,7 +139,24 @@ class _GasStationListState extends State<GasStationList> {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.start,
                           children: [
-                            _buildFuelPriceList(station.fuelPrices),
+                            _buildOpenStatus(station.openNow),
+                            Text(
+                                'Rating: ${station.rating} (${station.userRatingsTotal} reviews)'),
+                            const SizedBox(height: 20),
+                            Align(
+                              alignment: Alignment.centerLeft,
+                              child: OutlinedButton(
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => const MainScreen(),
+                                    ),
+                                  );
+                                },
+                                child: const Text('More Info'),
+                              ),
+                            ),
                           ],
                         ),
                       ),
@@ -131,15 +168,13 @@ class _GasStationListState extends State<GasStationList> {
     );
   }
 
-  Widget _buildFuelPriceList(List<FuelPrice>? prices) {
-    if (prices == null || prices.isEmpty) {
-      return const Text("No fuel price information available");
+  Widget _buildOpenStatus(bool? isOpen) {
+    if (isOpen == null) {
+      return const Text('Open status: Unknown',
+          style: TextStyle(color: Colors.grey));
     } else {
-      return Column(
-        children: prices
-            .map((price) => Text('${price.type}: ${price.price}'))
-            .toList(),
-      );
+      return Text('Open Now: ${isOpen ? "Yes" : "No"}',
+          style: TextStyle(color: isOpen ? Colors.green : Colors.red));
     }
   }
 }

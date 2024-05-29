@@ -14,3 +14,11 @@ Usar de MindCare el diaryScreen para mostrar tarjetitas de las diferentes gasoli
 IDEA:
 QUIZÁS LO MEJOR NO ES HACER UN MAPA, SI NO MOSTRAR TARJETITAS DE LAS GASOLINERAS CERCANAS CON INFORMACICIÓN SOBRE ELLAS.
 PARA IMPLEMENTAR ALGO DE DIFICULTAD, AÑADIR UN BOTÓN SOBRE LAS TARJETAS QUE LE
+
+
+https://firebase.flutter.dev/docs/auth/password-auth
+https://console.firebase.google.com/u/0/project/oilsavings/authentication/providers?hl=es-419
+
+
+https://stackoverflow.com/questions/66549206/some-input-files-use-or-override-a-deprecated-api-flutter ARCHIVOS DEPRECATED
+https://stackoverflow.com/questions/68889827/how-to-sync-firestore-database-and-firebase-authentication CONECTAR USUARIO AUTH CON FIREBASE

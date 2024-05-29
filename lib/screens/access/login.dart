@@ -18,12 +18,6 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
 
-  final UserService _userService = UserService();
-
-  void simpleFunction() {
-    print('Hello from simpleFunction!');
-  }
-
   void _handleSubmitted() async {
     try {
       final credential = await FirebaseAuth.instance.signInWithEmailAndPassword(
@@ -35,14 +29,15 @@ class _LoginPageState extends State<LoginPage> {
         print('No user found for that email.');
       } else if (e.code == 'wrong-password') {
         print('Wrong password provided for that user.');
+      } else {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const MainScreen(),
+          ),
+        );
       }
     }
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => const MainScreen(),
-      ),
-    );
   }
 
   @override

@@ -8,8 +8,9 @@ environment:
 dependencies:
   animate_do: ^3.3.4
   email_validator: ^2.1.17
-  firebase_auth: ^4.19.6
+  firebase_auth: ^4.20.0
   firebase_core: ^2.31.1
+  firebase_storage: ^11.7.7
   flutter:
     sdk: flutter
   flutter_google_places_sdk: ^0.3.2+9
@@ -17,11 +18,13 @@ dependencies:
   font_awesome_icon_class: ^0.0.6
   geolocator: ^12.0.0
   google_maps_flutter: ^2.6.1
-  googleapis_auth: ^1.6.0
-  http: ^1.2.1
+  googleapis_auth: ^1.4.1
+  html: ^0.15.4
+  http: ^0.13.0
   loading_animation_widget: ^1.2.1
   location: ^6.0.2
   permission_handler: ^11.3.1
+  web_scraper: ^0.1.4
   url_launcher: ^6.2.6
 
 dev_dependencies:

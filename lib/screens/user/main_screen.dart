@@ -17,6 +17,9 @@ class _MainScreenState extends State<MainScreen> {
   double _currentSliderValue = 2; // Valor inicial del slider
   Position? _currentPosition;
 
+// Suggested code may be subject to a license. Learn more: ~LicenseLog:2334053744.
+  final user = FirebaseAuth.instance.currentUser;
+
   @override
   void initState() {
     super.initState();
@@ -59,8 +62,6 @@ class _MainScreenState extends State<MainScreen> {
       );
     }
   }
-
-
 
   void _handleButtonPress(BuildContext context, VoidCallback onSuccess) async {
     if (await Permission.locationWhenInUse.isGranted &&
