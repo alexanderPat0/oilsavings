@@ -1,4 +1,4 @@
-// ignore_for_file: avoid_print, use_build_context_synchronously
+// ignore_for_file: avoid_print, use_build_context_synchronously, unused_field
 
 import 'dart:io';
 
@@ -34,86 +34,11 @@ class PersonData {
   String password = '';
 }
 
-class PasswordField extends StatefulWidget {
-  const PasswordField({
-    super.key,
-    this.restorationId,
-    this.fieldKey,
-    this.hintText,
-    this.labelText,
-    this.helperText,
-    this.onSaved,
-    this.validator,
-    this.onFieldSubmitted,
-    this.focusNode,
-    this.textInputAction,
-  });
-
-  final String? restorationId;
-  final Key? fieldKey;
-  final String? hintText;
-  final String? labelText;
-  final String? helperText;
-  final FormFieldSetter<String>? onSaved;
-  final FormFieldValidator<String>? validator;
-  final ValueChanged<String>? onFieldSubmitted;
-  final FocusNode? focusNode;
-  final TextInputAction? textInputAction;
-
-  @override
-  State<PasswordField> createState() => _PasswordFieldState();
-}
-
-class _PasswordFieldState extends State<PasswordField> with RestorationMixin {
-  final RestorableBool _obscureText = RestorableBool(true);
-  final String? label1 = 'Password incorrect';
-
-  @override
-  String? get restorationId => widget.restorationId;
-
-  @override
-  void restoreState(RestorationBucket? oldBucket, bool initialRestore) {
-    registerForRestoration(_obscureText, 'obscure_text');
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return TextFormField(
-      key: widget.fieldKey,
-      restorationId: 'password_text_field',
-      obscureText: _obscureText.value,
-      controller: passwordController,
-      onSaved: widget.onSaved,
-      validator: widget.validator,
-      onFieldSubmitted: widget.onFieldSubmitted,
-      decoration: InputDecoration(
-        filled: true,
-        hintText: widget.hintText,
-        labelText: widget.labelText,
-        helperText: widget.helperText,
-        icon: const Icon(Icons.key),
-        suffixIcon: IconButton(
-          onPressed: () {
-            setState(() {
-              _obscureText.value = !_obscureText.value;
-            });
-          },
-          hoverColor: Colors.transparent,
-          icon: Icon(
-            _obscureText.value ? Icons.visibility : Icons.visibility_off,
-            semanticLabel: _obscureText.value ? label1 : label1,
-          ),
-        ),
-      ),
-    );
-  }
-}
-
 class TextFormFieldDemoState extends State<TextFormFieldDemo>
     with RestorationMixin {
   PersonData person = PersonData();
-
   late FocusNode _name, _email, _password, _retypePassword;
+  bool isLoading = false;
 
   final TextEditingController nameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
@@ -133,6 +58,10 @@ class TextFormFieldDemoState extends State<TextFormFieldDemo>
     _email.dispose();
     _password.dispose();
     _retypePassword.dispose();
+    nameController.dispose();
+    emailController.dispose();
+    passwordController.dispose();
+    cpasswordController.dispose();
     super.dispose();
   }
 
@@ -189,10 +118,14 @@ class TextFormFieldDemoState extends State<TextFormFieldDemo>
     final form = _formKey.currentState!;
     if (!form.validate()) {
       _autoValidateModeIndex.value = AutovalidateMode.always.index;
-      showInSnackBarError(('Error. Try again'));
+      showInSnackBarError('Error. Try again');
     } else {
-      String? mail = emailController.text;
-      String? password = passwordController.text;
+      String mail = emailController.text.trim();
+      String password = passwordController.text.trim();
+
+      setState(() {
+        isLoading = true;
+      });
 
       try {
         final credential =
@@ -201,9 +134,9 @@ class TextFormFieldDemoState extends State<TextFormFieldDemo>
           password: password,
         );
         print('User registered with email: ${credential.user?.email}');
-        showInSnackBarSuccess(' User registered ');
+        showInSnackBarSuccess('User registered');
         sleep(const Duration(seconds: 1));
-        Navigator.push(
+        Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const LoginPage()),
         );
@@ -212,9 +145,16 @@ class TextFormFieldDemoState extends State<TextFormFieldDemo>
           showInSnackBarError('The password provided is too weak.');
         } else if (e.code == 'email-already-in-use') {
           showInSnackBarError('An account already exists for that email.');
+        } else {
+          showInSnackBarError('An unknown error occurred.');
         }
       } catch (e) {
         print(e);
+        showInSnackBarError('An error occurred. Please try again.');
+      } finally {
+        setState(() {
+          isLoading = false;
+        });
       }
     }
   }
@@ -247,9 +187,7 @@ class TextFormFieldDemoState extends State<TextFormFieldDemo>
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
-                    const SizedBox(
-                      height: 80,
-                    ),
+                    const SizedBox(height: 80),
                     FadeInUp(
                       duration: const Duration(milliseconds: 1000),
                       child: const Text(
@@ -257,9 +195,7 @@ class TextFormFieldDemoState extends State<TextFormFieldDemo>
                         style: TextStyle(color: Colors.white, fontSize: 40),
                       ),
                     ),
-                    const SizedBox(
-                      height: 10,
-                    ),
+                    const SizedBox(height: 10),
                     FadeInUp(
                       duration: const Duration(milliseconds: 1300),
                       child: const Text(
@@ -376,9 +312,7 @@ class TextFormFieldDemoState extends State<TextFormFieldDemo>
                           ),
                         ),
                       ),
-                      const SizedBox(
-                        height: 40,
-                      ),
+                      const SizedBox(height: 40),
                       FadeInUp(
                         duration: const Duration(milliseconds: 1500),
                         child: GestureDetector(
@@ -396,28 +330,28 @@ class TextFormFieldDemoState extends State<TextFormFieldDemo>
                           ),
                         ),
                       ),
-                      const SizedBox(
-                        height: 40,
-                      ),
+                      const SizedBox(height: 40),
                       FadeInUp(
                         duration: const Duration(milliseconds: 1600),
-                        child: MaterialButton(
-                          onPressed: _handleSubmitted,
-                          height: 50,
-                          color: Colors.orange[900],
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(50),
-                          ),
-                          child: const Center(
-                            child: Text(
-                              "Register",
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
+                        child: isLoading
+                            ? const CircularProgressIndicator()
+                            : MaterialButton(
+                                onPressed: _handleSubmitted,
+                                height: 50,
+                                color: Colors.orange[900],
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(50),
+                                ),
+                                child: const Center(
+                                  child: Text(
+                                    "Register",
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
                               ),
-                            ),
-                          ),
-                        ),
                       ),
                     ],
                   ),

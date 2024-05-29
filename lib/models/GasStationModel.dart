@@ -1,4 +1,3 @@
-
 class GasStationModel {
   bool? status;
   List<GasStationData>? results;
