@@ -236,14 +236,14 @@ class _GasStationListState extends State<GasStationList> {
   String getBrandFromName(String? name) {
     if (name == null) return 'Unknown';
     name = name.toLowerCase();
-    if (name.contains('repsol')) return 'Repsol';
-    if (name.contains('cepsa')) return 'Cepsa';
-    if (name.contains('bp')) return 'BP';
-    if (name.contains('shell')) return 'Shell';
-    if (name.contains('galp')) return 'Galp';
-    if (name.contains('alcampo')) return 'Alcampo';
-    if (name.contains('carrefour')) return 'Carrefour';
-    if (name.contains('e.leclerc')) return 'E.Leclerc';
+    if (name.toLowerCase().contains('repsol')) return 'Repsol';
+    if (name.toLowerCase().contains('cepsa')) return 'Cepsa';
+    if (name.toLowerCase().contains('bp')) return 'BP';
+    if (name.toLowerCase().contains('shell')) return 'Shell';
+    if (name.toLowerCase().contains('galp')) return 'Galp';
+    if (name.toLowerCase().contains('alcampo')) return 'Alcampo';
+    if (name.toLowerCase().contains('carrefour')) return 'Carrefour';
+    if (name.toLowerCase().contains('e.leclerc')) return 'E.Leclerc';
     return 'Unknown';
   }
 }
