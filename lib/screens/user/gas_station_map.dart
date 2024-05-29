@@ -3,8 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:oilsavings/models/GasStationModel.dart';
 import 'package:oilsavings/screens/user/main_screen.dart';
 import 'dart:convert';
-
-import 'package:web_scraper/web_scraper.dart';
+import 'package:chaleno/chaleno.dart';
 
 class GasStationList extends StatefulWidget {
   final double latitude;
@@ -24,7 +23,6 @@ class GasStationList extends StatefulWidget {
 
 class _GasStationListState extends State<GasStationList> {
   List<GasStationData> _stations = [];
-  final webScraper = WebScraper('https://www.dieselogasolina.com');
   Map<String, Map<String, double>> prices = {};
   String _selectedFuelType = 'Sin Plomo 95';
   final apiKey = 'AIzaSyBmaXLlR-Pfgm1sfn-8oALHvu9Zf1fWT7k';
@@ -35,22 +33,37 @@ class _GasStationListState extends State<GasStationList> {
     _fetchGasStations();
     _fetchPrices();
   }
+
   void _fetchPrices() async {
-    if (await webScraper.loadWebPage('/')) {
-      final tableRows = webScraper.getElement('table tbody tr', ['td']);
-      for (var row in tableRows) {
-        var cells = row['attributes']['td'];
-        String fuelType = cells[0]['title'];
-        for (int i = 1; i < cells.length; i++) {
-          String brand = getBrandName(i);
-          double price = double.tryParse(cells[i]['title'].replaceAll('€/l', '').replaceAll(',', '.')) ?? 0.0;
-          if (!prices.containsKey(brand)) {
-            prices[brand] = {};
+    final parser = await Chaleno().load('https://www.dieselogasolina.com');
+    if (parser != null) {
+      final elements =
+          parser.getElementsByClassName('center por_marcas size-100p');
+      final elements1 =
+          elements[1].getElementsByClassName('center por_marcas size-100p');
+      if (elements != null && elements.isNotEmpty) {
+        final tableRows = elements[0].getElementsByTagName('tr');
+        for (var row in tableRows) {
+          final cells = row.getElementsByTagName('td');
+          if (cells.isNotEmpty) {
+            String fuelType = cells[0].text.trim();
+            for (int i = 1; i < cells.length; i++) {
+              String brand = getBrandName(i);
+              double price = double.tryParse(cells[i]
+                      .text
+                      .trim()
+                      .replaceAll('€/l', '')
+                      .replaceAll(',', '.')) ??
+                  0.0;
+              if (!prices.containsKey(brand)) {
+                prices[brand] = {};
+              }
+              prices[brand]![fuelType] = price;
+            }
           }
-          prices[brand]![fuelType] = price;
         }
+        setState(() {});
       }
-      setState(() {});
     }
   }
 
@@ -153,11 +166,15 @@ class _GasStationListState extends State<GasStationList> {
 
                       if (station.name!.toLowerCase().contains('repsol')) {
                         img = "imgs/gas_station_img/repsol_icon.png";
-                      } else if (station.name!.toLowerCase().contains('cepsa')) {
+                      } else if (station.name!
+                          .toLowerCase()
+                          .contains('cepsa')) {
                         img = "imgs/gas_station_img/cepsa_icon.png";
                       } else if (station.name!.toLowerCase().contains('bp')) {
                         img = "imgs/gas_station_img/bp_icon.png";
-                      } else if (station.name!.toLowerCase().contains('shell')) {
+                      } else if (station.name!
+                          .toLowerCase()
+                          .contains('shell')) {
                         img = "imgs/gas_station_img/shell_icon.png";
                       } else {
                         img = "imgs/gas_station_img/default_station.png";
@@ -167,7 +184,8 @@ class _GasStationListState extends State<GasStationList> {
                         child: ExpansionTile(
                           leading: Image.asset(img, width: 50, height: 50),
                           title: Text(station.name ?? 'Name not available'),
-                          subtitle: Text(station.vicinity ?? 'No address available'),
+                          subtitle:
+                              Text(station.vicinity ?? 'No address available'),
                           children: <Widget>[
                             Padding(
                               padding: const EdgeInsets.all(16.0),
@@ -180,7 +198,8 @@ class _GasStationListState extends State<GasStationList> {
                                   const SizedBox(height: 20),
                                   fuelPrices != null
                                       ? Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
                                           children: fuelPrices.entries
                                               .map((entry) => Text(
                                                   '${entry.key}: ${entry.value.toStringAsFixed(3)} €/l'))
@@ -195,7 +214,8 @@ class _GasStationListState extends State<GasStationList> {
                                         Navigator.push(
                                           context,
                                           MaterialPageRoute(
-                                            builder: (context) => const MainScreen(),
+                                            builder: (context) =>
+                                                const MainScreen(),
                                           ),
                                         );
                                       },
