@@ -31,41 +31,41 @@ class _GasStationListState extends State<GasStationList> {
   void initState() {
     super.initState();
     _fetchGasStations();
-    _fetchPrices();
+    // _fetchPrices();
   }
 
-  void _fetchPrices() async {
-    final parser = await Chaleno().load('https://www.dieselogasolina.com');
-    if (parser != null) {
-      final elements =
-          parser.getElementsByClassName('center por_marcas size-100p');
-      final elements1 =
-          elements[1].getElementsByClassName('center por_marcas size-100p');
-      if (elements != null && elements.isNotEmpty) {
-        final tableRows = elements[0].getElementsByTagName('tr');
-        for (var row in tableRows) {
-          final cells = row.getElementsByTagName('td');
-          if (cells.isNotEmpty) {
-            String fuelType = cells[0].text.trim();
-            for (int i = 1; i < cells.length; i++) {
-              String brand = getBrandName(i);
-              double price = double.tryParse(cells[i]
-                      .text
-                      .trim()
-                      .replaceAll('€/l', '')
-                      .replaceAll(',', '.')) ??
-                  0.0;
-              if (!prices.containsKey(brand)) {
-                prices[brand] = {};
-              }
-              prices[brand]![fuelType] = price;
-            }
-          }
-        }
-        setState(() {});
-      }
-    }
-  }
+  // void _fetchPrices() async {
+  //   final parser = await Chaleno().load('https://www.dieselogasolina.com');
+  //   if (parser != null) {
+  //     final elements =
+  //         parser.getElementsByClassName('center por_marcas size-100p');
+  //     final elements1 =
+  //         elements[1].getElementsByClassName('center por_marcas size-100p');
+  //     if (elements != null && elements.isNotEmpty) {
+  //       final tableRows = elements[0].getElementsByTagName('tr');
+  //       for (var row in tableRows) {
+  //         final cells = row.getElementsByTagName('td');
+  //         if (cells.isNotEmpty) {
+  //           String fuelType = cells[0].text.trim();
+  //           for (int i = 1; i < cells.length; i++) {
+  //             String brand = getBrandName(i);
+  //             double price = double.tryParse(cells[i]
+  //                     .text
+  //                     .trim()
+  //                     .replaceAll('€/l', '')
+  //                     .replaceAll(',', '.')) ??
+  //                 0.0;
+  //             if (!prices.containsKey(brand)) {
+  //               prices[brand] = {};
+  //             }
+  //             prices[brand]![fuelType] = price;
+  //           }
+  //         }
+  //       }
+  //       setState(() {});
+  //     }
+  //   }
+  // }
 
   String getBrandName(int index) {
     switch (index) {
