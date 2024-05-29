@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:oilsavings/screens/user/main_screen.dart';
 import 'login.dart';
 import 'package:animate_do/animate_do.dart';
 
@@ -138,7 +139,7 @@ class TextFormFieldDemoState extends State<TextFormFieldDemo>
         sleep(const Duration(seconds: 1));
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const LoginPage()),
+          MaterialPageRoute(builder: (context) => const MainScreen()),
         );
       } on FirebaseAuthException catch (e) {
         if (e.code == 'weak-password') {

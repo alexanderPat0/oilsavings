@@ -7,7 +7,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:oilsavings/screens/access/welcome.dart';
 
 class MainScreen extends StatefulWidget {
-  const MainScreen({Key? key}) : super(key: key);
+  const MainScreen({super.key});
 
   @override
   _MainScreenState createState() => _MainScreenState();
@@ -34,6 +34,17 @@ class _MainScreenState extends State<MainScreen> {
           desiredAccuracy: LocationAccuracy.high);
     }
     return null;
+  }
+
+  void _comprobarUsuarioLoggeado(){
+    if (FirebaseAuth.instance.currentUser == null) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const WelcomePage()),
+      );
+    }else{
+      print(FirebaseAuth.instance.currentUser!.email);
+    }
   }
 
   void _checkPermissionsAndService() async {
@@ -102,6 +113,7 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
+    _comprobarUsuarioLoggeado();
     return Scaffold(
       body: SafeArea(
         child: Stack(
@@ -201,6 +213,7 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   void _logout(BuildContext context) async {
+    
     await FirebaseAuth.instance.signOut();
     Navigator.pushReplacement(
       context,

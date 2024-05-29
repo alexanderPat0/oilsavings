@@ -22,3 +22,48 @@ https://console.firebase.google.com/u/0/project/oilsavings/authentication/provid
 
 https://stackoverflow.com/questions/66549206/some-input-files-use-or-override-a-deprecated-api-flutter ARCHIVOS DEPRECATED
 https://stackoverflow.com/questions/68889827/how-to-sync-firestore-database-and-firebase-authentication CONECTAR USUARIO AUTH CON FIREBASE
+
+
+
+//get firebase user
+FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+
+//get reference
+DatabaseReference ref = FirebaseDatabase.getInstance().getReference(USERS_TABLE);
+
+//build child
+ref.child(user.getUid()).setValue(user_class);
+
+USERS_TABLE is a direct child of root.
+
+Then when you want to retrieve the data, get a reference to the user by its UID, listen for addListenerForSingleValueEvent() (invoked only once), and iterate over the result with reflection:
+
+//get firebase user
+FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+
+//get reference
+DatabaseReference ref = FirebaseDatabase.getInstance().getReference(USERS_TABLE).child(user.getUid());
+//IMPORTANT: .getReference(user.getUid()) will not work although user.getUid() is unique. You need a full path!
+
+//grab info
+ref.addListenerForSingleValueEvent(new ValueEventListener() {
+    @Override
+    public void onDataChange(DataSnapshot dataSnapshot) {
+        final Profile tempProfile = new Profile(); //this is my user_class Class
+        final Field[] fields = tempProfile.getClass().getDeclaredFields();
+        for(Field field : fields){
+            Log.i(TAG, field.getName() + ": " + dataSnapshot.child(field.getName()).getValue());
+        }
+    }
+
+    public void onCancelled(DatabaseError databaseError) {
+    }
+});
+edit:
+
+Or without reflection:
+
+@Override
+public void onDataChange(DataSnapshot dataSnapshot) {
+    final Profile p = dataSnapshot.getValue(Profile.class);
+}
