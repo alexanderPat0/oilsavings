@@ -1,8 +1,10 @@
-import 'package:email_validator/email_validator.dart';
+// ignore_for_file: avoid_print, use_build_context_synchronously
+
+import 'dart:io';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'login.dart';
-import '../../services/UserService.dart';
 import 'package:animate_do/animate_do.dart';
 
 final TextEditingController passwordController = TextEditingController();
@@ -183,71 +185,38 @@ class TextFormFieldDemoState extends State<TextFormFieldDemo>
   final GlobalKey<FormFieldState<String>> _passwordFieldKey =
       GlobalKey<FormFieldState<String>>();
 
-  Future<void> _handleSubmitted() async{
+  Future<void> _handleSubmitted() async {
     final form = _formKey.currentState!;
     if (!form.validate()) {
-      _autoValidateModeIndex.value =
-          AutovalidateMode.always.index; // Start validating on every change.
+      _autoValidateModeIndex.value = AutovalidateMode.always.index;
       showInSnackBarError(('Error. Try again'));
     } else {
-      // form.save();
-
       String? mail = emailController.text;
       String? password = passwordController.text;
 
-// Suggested code may be subject to a license. Learn more: ~LicenseLog:1122435057.
-// Suggested code may be subject to a license. Learn more: ~LicenseLog:3147474789.
       try {
-  final credential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
-    email: mail,
-    password: password,
-  );
-} on FirebaseAuthException catch (e) {
-  if (e.code == 'weak-password') {
-    print('The password provided is too weak.');
-  } else if (e.code == 'email-already-in-use') {
-    print('The account already exists for that email.');
-  }
-} catch (e) {
-  print(e);
-}
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => const LoginPage()),
-      );
+        final credential =
+            await FirebaseAuth.instance.createUserWithEmailAndPassword(
+          email: mail,
+          password: password,
+        );
+        print('User registered with email: ${credential.user?.email}');
+        showInSnackBarSuccess(' User registered ');
+        sleep(const Duration(seconds: 1));
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const LoginPage()),
+        );
+      } on FirebaseAuthException catch (e) {
+        if (e.code == 'weak-password') {
+          showInSnackBarError('The password provided is too weak.');
+        } else if (e.code == 'email-already-in-use') {
+          showInSnackBarError('An account already exists for that email.');
+        }
+      } catch (e) {
+        print(e);
+      }
     }
-  }
-
-  String? _validateMail(String? value) {
-    if (value == null || value.isEmpty) {
-      return ('Can`t be empty');
-    }
-    if (!EmailValidator.validate(value)) {
-      return ('Invalid email');
-    }
-    return null;
-  }
-
-  String? _validateName(String? value) {
-    if (value == null || value.isEmpty) {
-      return ('Can`t be empty');
-    }
-    final nameExp = RegExp(r'^[A-Za-z ]+$');
-    if (!nameExp.hasMatch(value)) {
-      return ('Invalid name');
-    }
-    return null;
-  }
-
-  String? _validatePassword(String? value) {
-    final passwordField = _passwordFieldKey.currentState!;
-    if (passwordField.value == null || passwordField.value!.isEmpty) {
-      return ('Can`t be empty');
-    }
-    if (passwordField.value != value) {
-      return ('Invalid password');
-    }
-    return null;
   }
 
   @override

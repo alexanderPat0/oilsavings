@@ -1,5 +1,3 @@
-import 'dart:js_interop';
-
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:oilsavings/models/GasStationModel.dart';
@@ -37,10 +35,6 @@ class _GasStationListState extends State<GasStationList> {
     _fetchGasStations();
     _fetchPrices();
   }
-    Future<void> _refresh() async {
-    _fetchGasStations();
-    _fetchPrices();
-    }
   void _fetchPrices() async {
     if (await webScraper.loadWebPage('/')) {
       final tableRows = webScraper.getElement('table tbody tr', ['td']);
@@ -142,7 +136,6 @@ class _GasStationListState extends State<GasStationList> {
               onChanged: (newValue) {
                 setState(() {
                   _selectedFuelType = newValue!;
-                  // _refresh();
                 });
               },
             ),

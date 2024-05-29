@@ -1,11 +1,11 @@
+// ignore: file_names
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'welcome.dart';
-import '../user/main_screen.dart'; // Asumiendo que tienes una pantalla principal llamada MainScreen
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 
 class LoadingScreen extends StatefulWidget {
-  const LoadingScreen({Key? key}) : super(key: key);
+  const LoadingScreen({super.key});
 
   @override
   State<LoadingScreen> createState() => _LoadingScreenState();
@@ -19,7 +19,7 @@ class _LoadingScreenState extends State<LoadingScreen> {
       const Duration(seconds: 4),
       () => Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => WelcomePage()),
+        MaterialPageRoute(builder: (context) => const WelcomePage()),
       ),
     );
   }
