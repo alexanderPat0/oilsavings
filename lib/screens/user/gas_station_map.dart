@@ -1,3 +1,5 @@
+import 'dart:ffi';
+
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:oilsavings/models/GasStationModel.dart';
@@ -23,7 +25,10 @@ class GasStationList extends StatefulWidget {
 
 class _GasStationListState extends State<GasStationList> {
   List<GasStationData> _stations = [];
-  Map<String, Map<String, double>> prices = {};
+  Map<String, String> _repsol = {};
+  Map<String, String> _cepsa = {};
+  Map<String, String> _shell = {};
+  Map<String, String> _bp = {};
   String _selectedFuelType = 'Sin Plomo 95';
   final apiKey = 'AIzaSyBmaXLlR-Pfgm1sfn-8oALHvu9Zf1fWT7k';
 
@@ -34,27 +39,76 @@ class _GasStationListState extends State<GasStationList> {
     _fetchPrices();
   }
 
-  void _fetchPrices() async {
+  Future<void> _fetchPrices() async {
     final parser = await Chaleno().load('https://www.dieselogasolina.com');
     if (parser != null) {
-      final rows = parser.querySelectorAll('table tbody tr');
-      for (var row in rows) {
-        final cells = row.querySelectorAll('td');
-        if (cells!.isNotEmpty) {
-          String fuelType = cells[0].text!.trim();
-          List<String> brands = ['Repsol', 'Cepsa', 'Shell', 'BP'];
-          for (int i = 1; i <= brands.length; i++) {
-            String brand = brands[i - 1];
-            double price = double.tryParse(
-                cells[i].text!.trim().replaceAll('€/l', '').replaceAll(',', '.')) ?? 0.0;
-            if (!prices.containsKey(brand)) {
-              prices[brand] = {};
-            }
-            prices[brand]![fuelType] = price;
-          }
-        }
-      }
-      setState(() {});
+      final tablas = parser.querySelectorAll('.por_marcas table tbody tr');
+
+      var sinPlomo95 = tablas[0].text!.split("\n");
+      var sinPlomo98 = tablas[1].text!.split("\n");
+      var diesel = tablas[2].text!.split("\n");
+      var dieselPlus = tablas[3].text!.split("\n");
+
+      Map<String, String> repsol = {
+        "Sin plomo 95": sinPlomo95[2].trim(),
+        "Sin plomo 98": sinPlomo98[2].trim(),
+        "Diesel": diesel[2].trim(),
+        "Diesel+": dieselPlus[2].trim(),
+      };
+      Map<String, String> cepsa = {
+        "Sin plomo 95": sinPlomo95[3].trim(),
+        "Sin plomo 98": sinPlomo98[3].trim(),
+        "Diesel": diesel[3].trim(),
+        "Diesel+": dieselPlus[3].trim(),
+      };
+      Map<String, String> shell = {
+        "Sin plomo 95": sinPlomo95[5].trim(),
+        "Sin plomo 98": sinPlomo98[5].trim(),
+        "Diesel": diesel[5].trim(),
+        "Diesel+": dieselPlus[5].trim(),
+      };
+
+      Map<String, String> bp = {
+        "Sin plomo 95": sinPlomo95[6].trim(),
+        "Sin plomo 98": sinPlomo98[6].trim(),
+        "Diesel": diesel[6].trim(),
+        "Diesel+": dieselPlus[6].trim(),
+      };
+
+      print(repsol);
+      print(cepsa);
+      print(shell);
+      print(bp);
+
+      setState(() {
+        _bp = bp;
+        _cepsa = cepsa;
+        _repsol = repsol;
+        _shell = shell;
+      });
+
+      // INTENTO DE HACER BIEN LA LÓGICA PARA RECOGER LOS DATOS DE LA TABLA:
+      // for (var row in tablas!) {
+      //   final cells = row.querySelectorAll('td');
+      //   if (cells!.isNotEmpty) {
+      //     String fuelType = cells[0].text!.trim();
+      //     List<String> brands = ['Repsol', 'Cepsa', 'Shell', 'BP'];
+      //     for (int i = 1; i <= brands.length; i++) {
+      //       String brand = brands[i - 1];
+      //       double price = double.tryParse(cells[i]
+      //               .text!
+      //               .trim()
+      //               .replaceAll('€/l', '')
+      //               .replaceAll(',', '.')) ??
+      //           0.0;
+      //       if (!prices.containsKey(brand)) {
+      //         prices[brand] = {};
+      //       }
+      //       prices[brand]![fuelType] = price;
+      //     }
+      //   }
+      // }
+      // setState(() {});
     }
   }
 
@@ -82,16 +136,10 @@ class _GasStationListState extends State<GasStationList> {
     }
   }
 
-  List<GasStationData> _getFilteredStations() {
-    return _stations.where((station) {
-      String brand = getBrandFromName(station.name);
-      return prices.containsKey(brand) &&
-          prices[brand]!.containsKey(_selectedFuelType);
-    }).toList();
-  }
-
   @override
   Widget build(BuildContext context) {
+    print('Stations: ${_stations[1].name}');
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Nearby Gas Stations'),
@@ -107,7 +155,6 @@ class _GasStationListState extends State<GasStationList> {
                 'Sin Plomo 98',
                 'Gasóleo A',
                 'Gasóleo A+',
-                'GLP'
               ].map((String value) {
                 return DropdownMenuItem<String>(
                   value: value,
@@ -125,25 +172,29 @@ class _GasStationListState extends State<GasStationList> {
             child: _stations.isEmpty
                 ? const Center(child: Text('No gas stations found.'))
                 : ListView.builder(
-                    itemCount: _getFilteredStations().length,
+                    itemCount: _stations.length,
                     itemBuilder: (context, index) {
-                      final station = _getFilteredStations()[index];
+                      final station = _stations[index];
                       String img;
                       String brand = getBrandFromName(station.name);
-                      Map<String, double>? fuelPrices = prices[brand];
+                      Map<String, String>? fuelPrices;
 
                       if (station.name!.toLowerCase().contains('repsol')) {
                         img = "imgs/gas_station_img/repsol_icon.png";
+                        fuelPrices = _repsol;
                       } else if (station.name!
                           .toLowerCase()
                           .contains('cepsa')) {
                         img = "imgs/gas_station_img/cepsa_icon.png";
+                        fuelPrices = _cepsa;
                       } else if (station.name!.toLowerCase().contains('bp')) {
                         img = "imgs/gas_station_img/bp_icon.png";
+                        fuelPrices = _bp;
                       } else if (station.name!
                           .toLowerCase()
                           .contains('shell')) {
                         img = "imgs/gas_station_img/shell_icon.png";
+                        fuelPrices = _shell;
                       } else {
                         img = "imgs/gas_station_img/default_station.png";
                       }
@@ -170,7 +221,7 @@ class _GasStationListState extends State<GasStationList> {
                                               CrossAxisAlignment.start,
                                           children: fuelPrices.entries
                                               .map((entry) => Text(
-                                                  '${entry.key}: ${entry.value.toStringAsFixed(3)} €/l'))
+                                                  '${entry.key}: ${entry.value}'))
                                               .toList(),
                                         )
                                       : const Text('Fuel prices not available'),

@@ -36,13 +36,13 @@ class _MainScreenState extends State<MainScreen> {
     return null;
   }
 
-  void _comprobarUsuarioLoggeado(){
+  void _comprobarUsuarioLoggeado() {
     if (FirebaseAuth.instance.currentUser == null) {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const WelcomePage()),
       );
-    }else{
+    } else {
       print(FirebaseAuth.instance.currentUser!.email);
     }
   }
@@ -123,8 +123,7 @@ class _MainScreenState extends State<MainScreen> {
               left: 10,
               child: IconButton(
                 icon: const Icon(Icons.logout),
-                onPressed: () =>
-                    _handleButtonPress(context, () => _logout(context)),
+                onPressed: () => _logout(context),
               ),
             ),
             Center(
@@ -212,8 +211,7 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 
-  void _logout(BuildContext context) async {
-    
+  Future<void> _logout(BuildContext context) async {
     await FirebaseAuth.instance.signOut();
     Navigator.pushReplacement(
       context,

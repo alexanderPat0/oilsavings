@@ -1,5 +1,3 @@
-// ignore_for_file: avoid_print, use_build_context_synchronously, unused_field
-
 import 'dart:io';
 
 import 'package:firebase_auth/firebase_auth.dart';
@@ -77,8 +75,7 @@ class TextFormFieldDemoState extends State<TextFormFieldDemo>
             Text(message),
           ],
         ),
-        backgroundColor: const Color.fromARGB(
-            255, 93, 93, 93), // Puedes ajustar el color según tus preferencias
+        backgroundColor: const Color.fromARGB(255, 93, 93, 93),
       ),
     );
   }
@@ -94,8 +91,7 @@ class TextFormFieldDemoState extends State<TextFormFieldDemo>
             Text(message),
           ],
         ),
-        backgroundColor: const Color.fromARGB(
-            255, 93, 93, 93), // Puedes ajustar el color según tus preferencias
+        backgroundColor: const Color.fromARGB(255, 93, 93, 93),
       ),
     );
   }
@@ -112,47 +108,57 @@ class TextFormFieldDemoState extends State<TextFormFieldDemo>
       RestorableInt(AutovalidateMode.disabled.index);
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  final GlobalKey<FormFieldState<String>> _passwordFieldKey =
-      GlobalKey<FormFieldState<String>>();
 
   Future<void> _handleSubmitted() async {
     final form = _formKey.currentState!;
     if (!form.validate()) {
       _autoValidateModeIndex.value = AutovalidateMode.always.index;
       showInSnackBarError('Error. Try again');
-    } else {
-      String mail = emailController.text.trim();
-      String password = passwordController.text.trim();
+      return;
+    }
 
-      setState(() {
-        isLoading = true;
-      });
+    String mail = emailController.text.trim();
+    String password = passwordController.text.trim();
+    String confirmPassword = cpasswordController.text.trim();
 
-      try {
-        final credential =
-            await FirebaseAuth.instance.createUserWithEmailAndPassword(
-          email: mail,
-          password: password,
-        );
-        print('User registered with email: ${credential.user?.email}');
-        showInSnackBarSuccess('User registered');
-        sleep(const Duration(seconds: 1));
+    if (password != confirmPassword) {
+      showInSnackBarError('Passwords do not match');
+      return;
+    }
+
+    if (mail.isEmpty || password.isEmpty) {
+      showInSnackBarError('Email and password cannot be empty');
+      return;
+    }
+
+    setState(() {
+      isLoading = true;
+    });
+
+    try {
+      final credential = await FirebaseAuth.instance
+          .createUserWithEmailAndPassword(email: mail, password: password);
+      showInSnackBarSuccess('User registered');
+      if (mounted) {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const MainScreen()),
         );
-      } on FirebaseAuthException catch (e) {
-        if (e.code == 'weak-password') {
-          showInSnackBarError('The password provided is too weak.');
-        } else if (e.code == 'email-already-in-use') {
-          showInSnackBarError('An account already exists for that email.');
-        } else {
-          showInSnackBarError('An unknown error occurred.');
-        }
-      } catch (e) {
-        print(e);
-        showInSnackBarError('An error occurred. Please try again.');
-      } finally {
+      }
+    } on FirebaseAuthException catch (e) {
+      String errorMessage;
+      if (e.code == 'weak-password') {
+        errorMessage = 'The password provided is too weak.';
+      } else if (e.code == 'email-already-in-use') {
+        errorMessage = 'An account already exists for that email.';
+      } else {
+        errorMessage = 'An unknown error occurred.';
+      }
+      showInSnackBarError(errorMessage);
+    } catch (e) {
+      showInSnackBarError('An error occurred. Please try again.');
+    } finally {
+      if (mounted) {
         setState(() {
           isLoading = false;
         });
@@ -224,137 +230,164 @@ class TextFormFieldDemoState extends State<TextFormFieldDemo>
                   ),
                 ),
                 child: SingleChildScrollView(
-                  child: Column(
-                    children: <Widget>[
-                      FadeInUp(
-                        duration: const Duration(milliseconds: 1400),
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Column(
-                            children: <Widget>[
-                              Container(
-                                padding: const EdgeInsets.all(10),
-                                decoration: BoxDecoration(
-                                  border: Border(
-                                    bottom: BorderSide(
-                                      color: Colors.grey.shade200,
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      children: <Widget>[
+                        FadeInUp(
+                          duration: const Duration(milliseconds: 1400),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Column(
+                              children: <Widget>[
+                                Container(
+                                  padding: const EdgeInsets.all(10),
+                                  decoration: BoxDecoration(
+                                    border: Border(
+                                      bottom: BorderSide(
+                                        color: Colors.grey.shade200,
+                                      ),
                                     ),
                                   ),
-                                ),
-                                child: TextField(
-                                  controller: nameController,
-                                  decoration: const InputDecoration(
-                                    hintText: "Name",
-                                    hintStyle: TextStyle(color: Colors.grey),
-                                    border: InputBorder.none,
+                                  child: TextFormField(
+                                    controller: nameController,
+                                    decoration: const InputDecoration(
+                                      hintText: "Name",
+                                      hintStyle: TextStyle(color: Colors.grey),
+                                      border: InputBorder.none,
+                                    ),
+                                    validator: (value) {
+                                      if (value == null || value.isEmpty) {
+                                        return 'Please enter your name';
+                                      }
+                                      return null;
+                                    },
                                   ),
                                 ),
-                              ),
-                              Container(
-                                padding: const EdgeInsets.all(10),
-                                decoration: BoxDecoration(
-                                  border: Border(
-                                    bottom: BorderSide(
-                                      color: Colors.grey.shade200,
+                                Container(
+                                  padding: const EdgeInsets.all(10),
+                                  decoration: BoxDecoration(
+                                    border: Border(
+                                      bottom: BorderSide(
+                                        color: Colors.grey.shade200,
+                                      ),
                                     ),
                                   ),
-                                ),
-                                child: TextField(
-                                  controller: emailController,
-                                  decoration: const InputDecoration(
-                                    hintText: "Email",
-                                    hintStyle: TextStyle(color: Colors.grey),
-                                    border: InputBorder.none,
+                                  child: TextFormField(
+                                    controller: emailController,
+                                    decoration: const InputDecoration(
+                                      hintText: "Email",
+                                      hintStyle: TextStyle(color: Colors.grey),
+                                      border: InputBorder.none,
+                                    ),
+                                    validator: (value) {
+                                      if (value == null || value.isEmpty) {
+                                        return 'Please enter your email';
+                                      }
+                                      return null;
+                                    },
                                   ),
                                 ),
-                              ),
-                              Container(
-                                padding: const EdgeInsets.all(10),
-                                decoration: BoxDecoration(
-                                  border: Border(
-                                    bottom: BorderSide(
-                                      color: Colors.grey.shade200,
+                                Container(
+                                  padding: const EdgeInsets.all(10),
+                                  decoration: BoxDecoration(
+                                    border: Border(
+                                      bottom: BorderSide(
+                                        color: Colors.grey.shade200,
+                                      ),
                                     ),
                                   ),
-                                ),
-                                child: TextField(
-                                  controller: passwordController,
-                                  obscureText: true,
-                                  decoration: const InputDecoration(
-                                    hintText: "Password",
-                                    hintStyle: TextStyle(color: Colors.grey),
-                                    border: InputBorder.none,
+                                  child: TextFormField(
+                                    controller: passwordController,
+                                    obscureText: true,
+                                    decoration: const InputDecoration(
+                                      hintText: "Password",
+                                      hintStyle: TextStyle(color: Colors.grey),
+                                      border: InputBorder.none,
+                                    ),
+                                    validator: (value) {
+                                      if (value == null || value.isEmpty) {
+                                        return 'Please enter your password';
+                                      }
+                                      return null;
+                                    },
                                   ),
                                 ),
-                              ),
-                              Container(
-                                padding: const EdgeInsets.all(10),
-                                decoration: BoxDecoration(
-                                  border: Border(
-                                    bottom: BorderSide(
-                                      color: Colors.grey.shade200,
+                                Container(
+                                  padding: const EdgeInsets.all(10),
+                                  decoration: BoxDecoration(
+                                    border: Border(
+                                      bottom: BorderSide(
+                                        color: Colors.grey.shade200,
+                                      ),
                                     ),
                                   ),
-                                ),
-                                child: TextField(
-                                  controller: cpasswordController,
-                                  obscureText: true,
-                                  decoration: const InputDecoration(
-                                    hintText: "Repeat password",
-                                    hintStyle: TextStyle(color: Colors.grey),
-                                    border: InputBorder.none,
+                                  child: TextFormField(
+                                    controller: cpasswordController,
+                                    obscureText: true,
+                                    decoration: const InputDecoration(
+                                      hintText: "Repeat password",
+                                      hintStyle: TextStyle(color: Colors.grey),
+                                      border: InputBorder.none,
+                                    ),
+                                    validator: (value) {
+                                      if (value == null || value.isEmpty) {
+                                        return 'Please confirm your password';
+                                      }
+                                      return null;
+                                    },
                                   ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
-                      ),
-                      const SizedBox(height: 40),
-                      FadeInUp(
-                        duration: const Duration(milliseconds: 1500),
-                        child: GestureDetector(
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const LoginPage(),
-                              ),
-                            );
-                          },
-                          child: const Text(
-                            "Back to login",
-                            style: TextStyle(color: Colors.grey),
+                        const SizedBox(height: 40),
+                        FadeInUp(
+                          duration: const Duration(milliseconds: 1500),
+                          child: GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const LoginPage(),
+                                ),
+                              );
+                            },
+                            child: const Text(
+                              "Back to login",
+                              style: TextStyle(color: Colors.grey),
+                            ),
                           ),
                         ),
-                      ),
-                      const SizedBox(height: 40),
-                      FadeInUp(
-                        duration: const Duration(milliseconds: 1600),
-                        child: isLoading
-                            ? const CircularProgressIndicator()
-                            : MaterialButton(
-                                onPressed: _handleSubmitted,
-                                height: 50,
-                                color: Colors.orange[900],
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(50),
-                                ),
-                                child: const Center(
-                                  child: Text(
-                                    "Register",
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold,
+                        const SizedBox(height: 40),
+                        FadeInUp(
+                          duration: const Duration(milliseconds: 1600),
+                          child: isLoading
+                              ? const CircularProgressIndicator()
+                              : MaterialButton(
+                                  onPressed: _handleSubmitted,
+                                  height: 50,
+                                  color: Colors.orange[900],
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(50),
+                                  ),
+                                  child: const Center(
+                                    child: Text(
+                                      "Register",
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                      ),
                                     ),
                                   ),
                                 ),
-                              ),
-                      ),
-                    ],
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
