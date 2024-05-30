@@ -7,18 +7,26 @@ environment:
 
 dependencies:
   animate_do: ^3.3.4
+  chaleno: ^0.0.8
   email_validator: ^2.1.17
+  firebase_auth: ^4.20.0
+  firebase_core: ^2.31.1
+  firebase_storage: ^11.7.7
   flutter:
     sdk: flutter
-  flutter_google_places_sdk: ^0.3.2+9
+  flutter_google_places_sdk: ^0.3.9
   flutter_secure_storage: ^9.2.1
   font_awesome_icon_class: ^0.0.6
   geolocator: ^12.0.0
   google_maps_flutter: ^2.6.1
+  google_maps_flutter_android: ^2.8.0
+  googleapis_auth: ^1.6.0
+  html: ^0.15.4
   http: ^1.2.1
   loading_animation_widget: ^1.2.1
   location: ^6.0.2
   permission_handler: ^11.3.1
+  url_launcher: ^6.2.6
 
 dev_dependencies:
   flutter_lints: ^3.0.0
@@ -27,3 +35,7 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  assets:
+    - imgs/
+    - imgs/gas_station_img/
+    - imgs/randomIcon/

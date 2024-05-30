@@ -1,3 +1,15 @@
+buildscript {
+    repositories {
+        google()
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath 'com.android.tools.build:gradle:4.1.0' // Asegúrate de usar la versión correcta de Gradle
+        classpath 'com.google.gms:google-services:4.3.8'  // Google Services plugin
+    }
+}
+
 allprojects {
     repositories {
         google()

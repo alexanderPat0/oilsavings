@@ -1,65 +1,123 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
-
-import 'package:oilsavings/screens/access/login.dart';
+import 'package:oilsavings/screens/user/gas_station_map.dart';
 import 'package:permission_handler/permission_handler.dart';
 
+import 'package:oilsavings/screens/access/welcome.dart';
+
 class MainScreen extends StatefulWidget {
-  const MainScreen({Key? key}) : super(key: key);
+  const MainScreen({super.key});
 
   @override
   _MainScreenState createState() => _MainScreenState();
 }
 
 class _MainScreenState extends State<MainScreen> {
+  double _currentSliderValue = 2; // Valor inicial del slider
+  Position? _currentPosition;
+
+// Suggested code may be subject to a license. Learn more: ~LicenseLog:2334053744.
+  final user = FirebaseAuth.instance.currentUser;
+
   @override
   void initState() {
     super.initState();
-    _requestLocationPermission();
+    _checkPermissionsAndService();
+    _getCurrentLocation();
   }
 
-  void _requestLocationPermission() async {
+  Future<Position?> _getCurrentLocation() async {
+    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (serviceEnabled) {
+      return await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.high);
+    }
+    return null;
+  }
+
+  void _comprobarUsuarioLoggeado() {
+    if (FirebaseAuth.instance.currentUser == null) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const WelcomePage()),
+      );
+    } else {
+      print(FirebaseAuth.instance.currentUser!.email);
+    }
+  }
+
+  void _checkPermissionsAndService() async {
     var status = await Permission.locationWhenInUse.status;
     if (!status.isGranted) {
       await Permission.locationWhenInUse.request();
     }
 
-    // Check if permissions were granted after the request
-    if (await Permission.locationWhenInUse.isGranted) {
-      // Permission granted, proceed to get location
-      _getCurrentLocation();
+    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      // Prompt the user to enable the location services.
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text("Location Services Disabled"),
+            content: const Text("Please enable location services."),
+            actions: <Widget>[
+              TextButton(
+                child: const Text("OK"),
+                onPressed: () => Navigator.of(context).pop(),
+              ),
+            ],
+          );
+        },
+      );
+    }
+  }
+
+  void _handleButtonPress(BuildContext context, VoidCallback onSuccess) async {
+    if (await Permission.locationWhenInUse.isGranted &&
+        await Geolocator.isLocationServiceEnabled()) {
+      _currentPosition =
+          await _getCurrentLocation(); // Get the current position and wait for it
+      if (_currentPosition != null) {
+        print(
+            '\n\nCurrent Latitude:  ${_currentPosition!.latitude}, Longitude: ${_currentPosition!.longitude}, Radio: ${(_currentSliderValue * 1000).toInt()}');
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => GasStationList(
+              latitude: _currentPosition!.latitude,
+              longitude: _currentPosition!.longitude,
+              radius: (_currentSliderValue * 1000).toInt(),
+            ),
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Location data is not available. Please try again."),
+            duration: Duration(seconds: 5),
+          ),
+        );
+      }
     } else {
-      // Handle the situation when the user denies the permission
-      print("Location permission denied.");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+              "To use the app you must allow it to access your location and have the location service active."),
+          duration: Duration(seconds: 5),
+        ),
+      );
     }
-  }
-
-  void _getCurrentLocation() async {
-    try {
-      Position position = await Geolocator.getCurrentPosition(
-          desiredAccuracy: LocationAccuracy.high);
-      print("Location: ${position.latitude}, ${position.longitude}");
-      // Here you could update the state or perform additional operations with the location
-    } catch (e) {
-      print("Error getting location: $e");
-    }
-  }
-
-  void _logout(BuildContext context) {
-    // Implementa la lógica de cerrar sesión aquí
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => const LoginPage()),
-    );
   }
 
   @override
   Widget build(BuildContext context) {
+    _comprobarUsuarioLoggeado();
     return Scaffold(
       body: SafeArea(
         child: Stack(
           children: [
-            // Botón de cerrar sesión en la esquina superior izquierda
             Positioned(
               top: 10,
               left: 10,
@@ -72,7 +130,6 @@ class _MainScreenState extends State<MainScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // Botón grande en el centro
                   Container(
                     margin: const EdgeInsets.all(10),
                     width: 100,
@@ -81,26 +138,43 @@ class _MainScreenState extends State<MainScreen> {
                       color: Colors.orange.shade800,
                       shape: BoxShape.circle,
                     ),
-                    child: const Center(
-                      child: Text(
-                        'Main',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
+                    child: Center(
+                      child: TextButton(
+                        onPressed: () => _handleButtonPress(context, () {}),
+                        child: const Text(
+                          'Main',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                     ),
                   ),
-                  // Fila de botones más pequeños debajo del botón grande
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      _buildSmallButton(context, 'Option 1'),
-                      _buildSmallButton(context, 'Option 2'),
-                      _buildSmallButton(context, 'Option 3'),
-                      _buildSmallButton(context, 'Option 4'),
+                      _buildSmallButton(context, 'Option 1', () {}),
+                      _buildSmallButton(context, 'Option 2', () {}),
+                      _buildSmallButton(context, 'Option 3', () {}),
+                      _buildSmallButton(context, 'Option 4', () {}),
                     ],
+                  ),
+                  const Center(
+                    child: Text('Searching Range (in km):'),
+                  ),
+                  Slider(
+                    value: _currentSliderValue,
+                    min: 1,
+                    max: 5,
+                    divisions: 4,
+                    label: _currentSliderValue.round().toString(),
+                    onChanged: (double value) {
+                      setState(() {
+                        _currentSliderValue = value;
+                      });
+                    },
                   ),
                 ],
               ),
@@ -111,8 +185,8 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 
-  // Función para construir los botones pequeños
-  Widget _buildSmallButton(BuildContext context, String label) {
+  Widget _buildSmallButton(
+      BuildContext context, String label, VoidCallback onPress) {
     return Container(
       margin: const EdgeInsets.all(10),
       width: 60,
@@ -122,15 +196,26 @@ class _MainScreenState extends State<MainScreen> {
         shape: BoxShape.circle,
       ),
       child: Center(
-        child: Text(
-          label,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 12,
+        child: TextButton(
+          onPressed: () => _handleButtonPress(context, onPress),
+          child: Text(
+            label,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 12,
+            ),
+            textAlign: TextAlign.center,
           ),
-          textAlign: TextAlign.center,
         ),
       ),
+    );
+  }
+
+  Future<void> _logout(BuildContext context) async {
+    await FirebaseAuth.instance.signOut();
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => const WelcomePage()),
     );
   }
 }
