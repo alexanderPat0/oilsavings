@@ -1,11 +1,9 @@
-import 'dart:ffi';
-
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:oilsavings/models/GasStationModel.dart';
-import 'package:oilsavings/screens/user/main_screen.dart';
 import 'dart:convert';
 import 'package:chaleno/chaleno.dart';
+import 'package:oilsavings/screens/user/route_station.dart';
 
 class GasStationList extends StatefulWidget {
   final double latitude;
@@ -29,7 +27,6 @@ class _GasStationListState extends State<GasStationList> {
   Map<String, String> _cepsa = {};
   Map<String, String> _shell = {};
   Map<String, String> _bp = {};
-  String _selectedFuelType = 'Sin Plomo 95';
   final apiKey = 'AIzaSyBmaXLlR-Pfgm1sfn-8oALHvu9Zf1fWT7k';
 
   @override
@@ -146,28 +143,6 @@ class _GasStationListState extends State<GasStationList> {
       ),
       body: Column(
         children: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: DropdownButton<String>(
-              value: _selectedFuelType,
-              items: <String>[
-                'Sin Plomo 95',
-                'Sin Plomo 98',
-                'Gasóleo A',
-                'Gasóleo A+',
-              ].map((String value) {
-                return DropdownMenuItem<String>(
-                  value: value,
-                  child: Text(value),
-                );
-              }).toList(),
-              onChanged: (newValue) {
-                setState(() {
-                  _selectedFuelType = newValue!;
-                });
-              },
-            ),
-          ),
           Expanded(
             child: _stations.isEmpty
                 ? const Center(child: Text('No gas stations found.'))
@@ -233,8 +208,13 @@ class _GasStationListState extends State<GasStationList> {
                                         Navigator.push(
                                           context,
                                           MaterialPageRoute(
-                                            builder: (context) =>
-                                                const MainScreen(),
+                                            builder: (context) => MapScreen(
+                                              destinationLat:
+                                                  station.latitude ?? 36.509191,
+                                              destinationLng:
+                                                  station.longitude ??
+                                                      -6.274902,
+                                            ),
                                           ),
                                         );
                                       },
