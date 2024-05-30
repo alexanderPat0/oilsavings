@@ -11,6 +11,7 @@ dependencies:
   email_validator: ^2.1.17
   firebase_auth: ^4.20.0
   firebase_core: ^2.31.1
+  firebase_database: ^10.5.7
   firebase_storage: ^11.7.7
   flutter:
     sdk: flutter

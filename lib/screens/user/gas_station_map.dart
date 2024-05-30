@@ -135,7 +135,14 @@ class _GasStationListState extends State<GasStationList> {
 
   @override
   Widget build(BuildContext context) {
-    print('Stations: ${_stations[1].name}');
+    if (_stations.isEmpty) {
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('Nearby Gas Stations'),
+        ),
+        body: const Center(child: CircularProgressIndicator()),
+      );
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -144,91 +151,82 @@ class _GasStationListState extends State<GasStationList> {
       body: Column(
         children: [
           Expanded(
-            child: _stations.isEmpty
-                ? const Center(child: Text('No gas stations found.'))
-                : ListView.builder(
-                    itemCount: _stations.length,
-                    itemBuilder: (context, index) {
-                      final station = _stations[index];
-                      String img;
-                      String brand = getBrandFromName(station.name);
-                      Map<String, String>? fuelPrices;
+            child: ListView.builder(
+              itemCount: _stations.length,
+              itemBuilder: (context, index) {
+                final station = _stations[index];
+                String img;
+                Map<String, String>? fuelPrices;
 
-                      if (station.name!.toLowerCase().contains('repsol')) {
-                        img = "imgs/gas_station_img/repsol_icon.png";
-                        fuelPrices = _repsol;
-                      } else if (station.name!
-                          .toLowerCase()
-                          .contains('cepsa')) {
-                        img = "imgs/gas_station_img/cepsa_icon.png";
-                        fuelPrices = _cepsa;
-                      } else if (station.name!.toLowerCase().contains('bp')) {
-                        img = "imgs/gas_station_img/bp_icon.png";
-                        fuelPrices = _bp;
-                      } else if (station.name!
-                          .toLowerCase()
-                          .contains('shell')) {
-                        img = "imgs/gas_station_img/shell_icon.png";
-                        fuelPrices = _shell;
-                      } else {
-                        img = "imgs/gas_station_img/default_station.png";
-                      }
+                if (station.name!.toLowerCase().contains('repsol')) {
+                  img = "imgs/gas_station_img/repsol_icon.png";
+                  fuelPrices = _repsol;
+                } else if (station.name!.toLowerCase().contains('cepsa')) {
+                  img = "imgs/gas_station_img/cepsa_icon.png";
+                  fuelPrices = _cepsa;
+                } else if (station.name!.toLowerCase().contains('bp')) {
+                  img = "imgs/gas_station_img/bp_icon.png";
+                  fuelPrices = _bp;
+                } else if (station.name!.toLowerCase().contains('shell')) {
+                  img = "imgs/gas_station_img/shell_icon.png";
+                  fuelPrices = _shell;
+                } else {
+                  img = "imgs/gas_station_img/default_station.png";
+                }
 
-                      return Card(
-                        child: ExpansionTile(
-                          leading: Image.asset(img, width: 50, height: 50),
-                          title: Text(station.name ?? 'Name not available'),
-                          subtitle:
-                              Text(station.vicinity ?? 'No address available'),
-                          children: <Widget>[
-                            Padding(
-                              padding: const EdgeInsets.all(16.0),
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                children: [
-                                  _buildOpenStatus(station.openNow),
-                                  Text(
-                                      'Rating: ${station.rating} (${station.userRatingsTotal} reviews)'),
-                                  const SizedBox(height: 20),
-                                  fuelPrices != null
-                                      ? Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: fuelPrices.entries
-                                              .map((entry) => Text(
-                                                  '${entry.key}: ${entry.value}'))
-                                              .toList(),
-                                        )
-                                      : const Text('Fuel prices not available'),
-                                  const SizedBox(height: 20),
-                                  Align(
-                                    alignment: Alignment.centerLeft,
-                                    child: OutlinedButton(
-                                      onPressed: () {
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (context) => MapScreen(
-                                              destinationLat:
-                                                  station.latitude ?? 36.509191,
-                                              destinationLng:
-                                                  station.longitude ??
-                                                      -6.274902,
-                                            ),
-                                          ),
-                                        );
-                                      },
-                                      child: const Text('More Info'),
+                return Card(
+                  child: ExpansionTile(
+                    leading: Image.asset(img, width: 50, height: 50),
+                    title: Text(station.name ?? 'Name not available'),
+                    subtitle: Text(station.vicinity ?? 'No address available'),
+                    children: <Widget>[
+                      Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            _buildOpenStatus(station.openNow),
+                            Text(
+                                'Rating: ${station.rating} (${station.userRatingsTotal} reviews)'),
+                            const SizedBox(height: 20),
+                            fuelPrices != null
+                                ? Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: fuelPrices.entries
+                                        .map((entry) => Text(
+                                            '${entry.key}: ${entry.value}'))
+                                        .toList(),
+                                  )
+                                : const Text('Fuel prices not available'),
+                            const SizedBox(height: 20),
+                            Align(
+                              alignment: Alignment.centerLeft,
+                              child: OutlinedButton(
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => MapScreen(
+                                        destinationLat:
+                                            station.latitude ?? 36.509191,
+                                        destinationLng:
+                                            station.longitude ?? -6.274902,
+                                      ),
                                     ),
-                                  ),
-                                ],
+                                  );
+                                },
+                                child: const Text('More Info'),
                               ),
                             ),
                           ],
                         ),
-                      );
-                    },
+                      ),
+                    ],
                   ),
+                );
+              },
+            ),
           ),
         ],
       ),
@@ -243,15 +241,5 @@ class _GasStationListState extends State<GasStationList> {
       return Text('Open Now: ${isOpen ? "Yes" : "No"}',
           style: TextStyle(color: isOpen ? Colors.green : Colors.red));
     }
-  }
-
-  String getBrandFromName(String? name) {
-    if (name == null) return 'Unknown';
-    name = name.toLowerCase();
-    if (name.toLowerCase().contains('repsol')) return 'Repsol';
-    if (name.toLowerCase().contains('cepsa')) return 'Cepsa';
-    if (name.toLowerCase().contains('bp')) return 'BP';
-    if (name.toLowerCase().contains('shell')) return 'Shell';
-    return 'Unknown';
   }
 }
