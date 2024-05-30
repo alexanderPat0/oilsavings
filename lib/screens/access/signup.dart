@@ -1,7 +1,9 @@
-import 'package:email_validator/email_validator.dart';
+import 'dart:io';
+
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:oilsavings/screens/user/main_screen.dart';
 import 'login.dart';
-import '../../services/UserService.dart';
 import 'package:animate_do/animate_do.dart';
 
 final TextEditingController passwordController = TextEditingController();
@@ -31,86 +33,11 @@ class PersonData {
   String password = '';
 }
 
-class PasswordField extends StatefulWidget {
-  const PasswordField({
-    super.key,
-    this.restorationId,
-    this.fieldKey,
-    this.hintText,
-    this.labelText,
-    this.helperText,
-    this.onSaved,
-    this.validator,
-    this.onFieldSubmitted,
-    this.focusNode,
-    this.textInputAction,
-  });
-
-  final String? restorationId;
-  final Key? fieldKey;
-  final String? hintText;
-  final String? labelText;
-  final String? helperText;
-  final FormFieldSetter<String>? onSaved;
-  final FormFieldValidator<String>? validator;
-  final ValueChanged<String>? onFieldSubmitted;
-  final FocusNode? focusNode;
-  final TextInputAction? textInputAction;
-
-  @override
-  State<PasswordField> createState() => _PasswordFieldState();
-}
-
-class _PasswordFieldState extends State<PasswordField> with RestorationMixin {
-  final RestorableBool _obscureText = RestorableBool(true);
-  final String? label1 = 'Password incorrect';
-
-  @override
-  String? get restorationId => widget.restorationId;
-
-  @override
-  void restoreState(RestorationBucket? oldBucket, bool initialRestore) {
-    registerForRestoration(_obscureText, 'obscure_text');
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return TextFormField(
-      key: widget.fieldKey,
-      restorationId: 'password_text_field',
-      obscureText: _obscureText.value,
-      controller: passwordController,
-      onSaved: widget.onSaved,
-      validator: widget.validator,
-      onFieldSubmitted: widget.onFieldSubmitted,
-      decoration: InputDecoration(
-        filled: true,
-        hintText: widget.hintText,
-        labelText: widget.labelText,
-        helperText: widget.helperText,
-        icon: const Icon(Icons.key),
-        suffixIcon: IconButton(
-          onPressed: () {
-            setState(() {
-              _obscureText.value = !_obscureText.value;
-            });
-          },
-          hoverColor: Colors.transparent,
-          icon: Icon(
-            _obscureText.value ? Icons.visibility : Icons.visibility_off,
-            semanticLabel: _obscureText.value ? label1 : label1,
-          ),
-        ),
-      ),
-    );
-  }
-}
-
 class TextFormFieldDemoState extends State<TextFormFieldDemo>
     with RestorationMixin {
   PersonData person = PersonData();
-
   late FocusNode _name, _email, _password, _retypePassword;
+  bool isLoading = false;
 
   final TextEditingController nameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
@@ -130,6 +57,10 @@ class TextFormFieldDemoState extends State<TextFormFieldDemo>
     _email.dispose();
     _password.dispose();
     _retypePassword.dispose();
+    nameController.dispose();
+    emailController.dispose();
+    passwordController.dispose();
+    cpasswordController.dispose();
     super.dispose();
   }
 
@@ -144,8 +75,7 @@ class TextFormFieldDemoState extends State<TextFormFieldDemo>
             Text(message),
           ],
         ),
-        backgroundColor: const Color.fromARGB(
-            255, 93, 93, 93), // Puedes ajustar el color según tus preferencias
+        backgroundColor: const Color.fromARGB(255, 93, 93, 93),
       ),
     );
   }
@@ -161,8 +91,7 @@ class TextFormFieldDemoState extends State<TextFormFieldDemo>
             Text(message),
           ],
         ),
-        backgroundColor: const Color.fromARGB(
-            255, 93, 93, 93), // Puedes ajustar el color según tus preferencias
+        backgroundColor: const Color.fromARGB(255, 93, 93, 93),
       ),
     );
   }
@@ -179,66 +108,62 @@ class TextFormFieldDemoState extends State<TextFormFieldDemo>
       RestorableInt(AutovalidateMode.disabled.index);
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  final GlobalKey<FormFieldState<String>> _passwordFieldKey =
-      GlobalKey<FormFieldState<String>>();
 
-  void _handleSubmitted() {
+  Future<void> _handleSubmitted() async {
     final form = _formKey.currentState!;
     if (!form.validate()) {
-      _autoValidateModeIndex.value =
-          AutovalidateMode.always.index; // Start validating on every change.
-      showInSnackBarError(('Error. Try again'));
-    } else {
-      // form.save();
-
-      String? name = nameController.text;
-      String? mail = emailController.text;
-      String? password = passwordController.text;
-      String? cpassword = passwordController.text;
-
-      UserService userService = UserService();
-      userService.register(name, mail, password, cpassword);
-
-      showInSnackBarSuccess(
-          'Registered.\nCheck your email to verify your account');
-
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => const LoginPage()),
-      );
+      _autoValidateModeIndex.value = AutovalidateMode.always.index;
+      showInSnackBarError('Error. Try again');
+      return;
     }
-  }
 
-  String? _validateMail(String? value) {
-    if (value == null || value.isEmpty) {
-      return ('Can`t be empty');
-    }
-    if (!EmailValidator.validate(value)) {
-      return ('Invalid email');
-    }
-    return null;
-  }
+    String mail = emailController.text.trim();
+    String password = passwordController.text.trim();
+    String confirmPassword = cpasswordController.text.trim();
 
-  String? _validateName(String? value) {
-    if (value == null || value.isEmpty) {
-      return ('Can`t be empty');
+    if (password != confirmPassword) {
+      showInSnackBarError('Passwords do not match');
+      return;
     }
-    final nameExp = RegExp(r'^[A-Za-z ]+$');
-    if (!nameExp.hasMatch(value)) {
-      return ('Invalid name');
-    }
-    return null;
-  }
 
-  String? _validatePassword(String? value) {
-    final passwordField = _passwordFieldKey.currentState!;
-    if (passwordField.value == null || passwordField.value!.isEmpty) {
-      return ('Can`t be empty');
+    if (mail.isEmpty || password.isEmpty) {
+      showInSnackBarError('Email and password cannot be empty');
+      return;
     }
-    if (passwordField.value != value) {
-      return ('Invalid password');
+
+    setState(() {
+      isLoading = true;
+    });
+
+    try {
+      final credential = await FirebaseAuth.instance
+          .createUserWithEmailAndPassword(email: mail, password: password);
+      showInSnackBarSuccess('User registered');
+      if (mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const MainScreen()),
+        );
+      }
+    } on FirebaseAuthException catch (e) {
+      String errorMessage;
+      if (e.code == 'weak-password') {
+        errorMessage = 'The password provided is too weak.';
+      } else if (e.code == 'email-already-in-use') {
+        errorMessage = 'An account already exists for that email.';
+      } else {
+        errorMessage = 'An unknown error occurred.';
+      }
+      showInSnackBarError(errorMessage);
+    } catch (e) {
+      showInSnackBarError('An error occurred. Please try again.');
+    } finally {
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+      }
     }
-    return null;
   }
 
   @override
@@ -269,9 +194,7 @@ class TextFormFieldDemoState extends State<TextFormFieldDemo>
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
-                    const SizedBox(
-                      height: 80,
-                    ),
+                    const SizedBox(height: 80),
                     FadeInUp(
                       duration: const Duration(milliseconds: 1000),
                       child: const Text(
@@ -279,9 +202,7 @@ class TextFormFieldDemoState extends State<TextFormFieldDemo>
                         style: TextStyle(color: Colors.white, fontSize: 40),
                       ),
                     ),
-                    const SizedBox(
-                      height: 10,
-                    ),
+                    const SizedBox(height: 10),
                     FadeInUp(
                       duration: const Duration(milliseconds: 1300),
                       child: const Text(
@@ -309,139 +230,164 @@ class TextFormFieldDemoState extends State<TextFormFieldDemo>
                   ),
                 ),
                 child: SingleChildScrollView(
-                  child: Column(
-                    children: <Widget>[
-                      FadeInUp(
-                        duration: const Duration(milliseconds: 1400),
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Column(
-                            children: <Widget>[
-                              Container(
-                                padding: const EdgeInsets.all(10),
-                                decoration: BoxDecoration(
-                                  border: Border(
-                                    bottom: BorderSide(
-                                      color: Colors.grey.shade200,
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      children: <Widget>[
+                        FadeInUp(
+                          duration: const Duration(milliseconds: 1400),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Column(
+                              children: <Widget>[
+                                Container(
+                                  padding: const EdgeInsets.all(10),
+                                  decoration: BoxDecoration(
+                                    border: Border(
+                                      bottom: BorderSide(
+                                        color: Colors.grey.shade200,
+                                      ),
                                     ),
                                   ),
-                                ),
-                                child: TextField(
-                                  controller: nameController,
-                                  decoration: const InputDecoration(
-                                    hintText: "Name",
-                                    hintStyle: TextStyle(color: Colors.grey),
-                                    border: InputBorder.none,
+                                  child: TextFormField(
+                                    controller: nameController,
+                                    decoration: const InputDecoration(
+                                      hintText: "Name",
+                                      hintStyle: TextStyle(color: Colors.grey),
+                                      border: InputBorder.none,
+                                    ),
+                                    validator: (value) {
+                                      if (value == null || value.isEmpty) {
+                                        return 'Please enter your name';
+                                      }
+                                      return null;
+                                    },
                                   ),
                                 ),
-                              ),
-                              Container(
-                                padding: const EdgeInsets.all(10),
-                                decoration: BoxDecoration(
-                                  border: Border(
-                                    bottom: BorderSide(
-                                      color: Colors.grey.shade200,
+                                Container(
+                                  padding: const EdgeInsets.all(10),
+                                  decoration: BoxDecoration(
+                                    border: Border(
+                                      bottom: BorderSide(
+                                        color: Colors.grey.shade200,
+                                      ),
                                     ),
                                   ),
-                                ),
-                                child: TextField(
-                                  controller: emailController,
-                                  decoration: const InputDecoration(
-                                    hintText: "Email",
-                                    hintStyle: TextStyle(color: Colors.grey),
-                                    border: InputBorder.none,
+                                  child: TextFormField(
+                                    controller: emailController,
+                                    decoration: const InputDecoration(
+                                      hintText: "Email",
+                                      hintStyle: TextStyle(color: Colors.grey),
+                                      border: InputBorder.none,
+                                    ),
+                                    validator: (value) {
+                                      if (value == null || value.isEmpty) {
+                                        return 'Please enter your email';
+                                      }
+                                      return null;
+                                    },
                                   ),
                                 ),
-                              ),
-                              Container(
-                                padding: const EdgeInsets.all(10),
-                                decoration: BoxDecoration(
-                                  border: Border(
-                                    bottom: BorderSide(
-                                      color: Colors.grey.shade200,
+                                Container(
+                                  padding: const EdgeInsets.all(10),
+                                  decoration: BoxDecoration(
+                                    border: Border(
+                                      bottom: BorderSide(
+                                        color: Colors.grey.shade200,
+                                      ),
                                     ),
                                   ),
-                                ),
-                                child: TextField(
-                                  controller: passwordController,
-                                  obscureText: true,
-                                  decoration: const InputDecoration(
-                                    hintText: "Password",
-                                    hintStyle: TextStyle(color: Colors.grey),
-                                    border: InputBorder.none,
+                                  child: TextFormField(
+                                    controller: passwordController,
+                                    obscureText: true,
+                                    decoration: const InputDecoration(
+                                      hintText: "Password",
+                                      hintStyle: TextStyle(color: Colors.grey),
+                                      border: InputBorder.none,
+                                    ),
+                                    validator: (value) {
+                                      if (value == null || value.isEmpty) {
+                                        return 'Please enter your password';
+                                      }
+                                      return null;
+                                    },
                                   ),
                                 ),
-                              ),
-                              Container(
-                                padding: const EdgeInsets.all(10),
-                                decoration: BoxDecoration(
-                                  border: Border(
-                                    bottom: BorderSide(
-                                      color: Colors.grey.shade200,
+                                Container(
+                                  padding: const EdgeInsets.all(10),
+                                  decoration: BoxDecoration(
+                                    border: Border(
+                                      bottom: BorderSide(
+                                        color: Colors.grey.shade200,
+                                      ),
                                     ),
                                   ),
-                                ),
-                                child: TextField(
-                                  controller: cpasswordController,
-                                  obscureText: true,
-                                  decoration: const InputDecoration(
-                                    hintText: "Repeat password",
-                                    hintStyle: TextStyle(color: Colors.grey),
-                                    border: InputBorder.none,
+                                  child: TextFormField(
+                                    controller: cpasswordController,
+                                    obscureText: true,
+                                    decoration: const InputDecoration(
+                                      hintText: "Repeat password",
+                                      hintStyle: TextStyle(color: Colors.grey),
+                                      border: InputBorder.none,
+                                    ),
+                                    validator: (value) {
+                                      if (value == null || value.isEmpty) {
+                                        return 'Please confirm your password';
+                                      }
+                                      return null;
+                                    },
                                   ),
                                 ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      const SizedBox(
-                        height: 40,
-                      ),
-                      FadeInUp(
-                        duration: const Duration(milliseconds: 1500),
-                        child: GestureDetector(
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const LoginPage(),
-                              ),
-                            );
-                          },
-                          child: const Text(
-                            "Back to login",
-                            style: TextStyle(color: Colors.grey),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(
-                        height: 40,
-                      ),
-                      FadeInUp(
-                        duration: const Duration(milliseconds: 1600),
-                        child: MaterialButton(
-                          onPressed: _handleSubmitted,
-                          height: 50,
-                          color: Colors.orange[900],
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(50),
-                          ),
-                          child: const Center(
-                            child: Text(
-                              "Register",
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                              ),
+                              ],
                             ),
                           ),
                         ),
-                      ),
-                    ],
+                        const SizedBox(height: 40),
+                        FadeInUp(
+                          duration: const Duration(milliseconds: 1500),
+                          child: GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const LoginPage(),
+                                ),
+                              );
+                            },
+                            child: const Text(
+                              "Back to login",
+                              style: TextStyle(color: Colors.grey),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 40),
+                        FadeInUp(
+                          duration: const Duration(milliseconds: 1600),
+                          child: isLoading
+                              ? const CircularProgressIndicator()
+                              : MaterialButton(
+                                  onPressed: _handleSubmitted,
+                                  height: 50,
+                                  color: Colors.orange[900],
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(50),
+                                  ),
+                                  child: const Center(
+                                    child: Text(
+                                      "Register",
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),

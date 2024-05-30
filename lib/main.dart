@@ -1,11 +1,13 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'screens/access/loadingScreen.dart';
 // import 'package:flutter_google_places_sdk/flutter_google_places_sdk.dart';
 
-void main() async {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   try {
+    await Firebase.initializeApp();
     runApp(const OilSavings());
   } catch (e) {
     runApp(ErrorScreen(error: e.toString()));

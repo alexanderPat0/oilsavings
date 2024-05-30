@@ -1,7 +1,3 @@
-import 'package:flutter/material.dart';
-
-import 'package:oilsavings/models/FuelDataModel.dart';
-
 class GasStationModel {
   bool? status;
   List<GasStationData>? results;
@@ -29,7 +25,6 @@ class GasStationData {
   double? rating;
   int? userRatingsTotal;
   String? vicinity;
-  List<FuelPrice>? fuelPrices;
 
   GasStationData({
     this.businessStatus,
@@ -41,7 +36,6 @@ class GasStationData {
     this.rating,
     this.userRatingsTotal,
     this.vicinity,
-    this.fuelPrices,
   });
 
   GasStationData.fromJson(Map<String, dynamic> json) {
@@ -58,11 +52,5 @@ class GasStationData {
         ? json['user_ratings_total'] as int?
         : null;
     vicinity = json['vicinity'] as String?;
-
-    if (json.containsKey('fuelOptions') &&
-        json['fuelOptions']['fuelPrices'] != null) {
-      var fuelPricesJson = json['fuelOptions']['fuelPrices'] as List;
-      fuelPrices = fuelPricesJson.map((fp) => FuelPrice.fromJson(fp)).toList();
-    }
   }
 }

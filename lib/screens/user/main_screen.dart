@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:oilsavings/screens/user/gas_station_map.dart';
@@ -6,7 +7,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:oilsavings/screens/access/welcome.dart';
 
 class MainScreen extends StatefulWidget {
-  const MainScreen({Key? key}) : super(key: key);
+  const MainScreen({super.key});
 
   @override
   _MainScreenState createState() => _MainScreenState();
@@ -15,6 +16,9 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   double _currentSliderValue = 2; // Valor inicial del slider
   Position? _currentPosition;
+
+// Suggested code may be subject to a license. Learn more: ~LicenseLog:2334053744.
+  final user = FirebaseAuth.instance.currentUser;
 
   @override
   void initState() {
@@ -30,6 +34,17 @@ class _MainScreenState extends State<MainScreen> {
           desiredAccuracy: LocationAccuracy.high);
     }
     return null;
+  }
+
+  void _comprobarUsuarioLoggeado() {
+    if (FirebaseAuth.instance.currentUser == null) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const WelcomePage()),
+      );
+    } else {
+      print(FirebaseAuth.instance.currentUser!.email);
+    }
   }
 
   void _checkPermissionsAndService() async {
@@ -98,6 +113,7 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
+    _comprobarUsuarioLoggeado();
     return Scaffold(
       body: SafeArea(
         child: Stack(
@@ -107,8 +123,7 @@ class _MainScreenState extends State<MainScreen> {
               left: 10,
               child: IconButton(
                 icon: const Icon(Icons.logout),
-                onPressed: () =>
-                    _handleButtonPress(context, () => _logout(context)),
+                onPressed: () => _logout(context),
               ),
             ),
             Center(
@@ -196,7 +211,8 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 
-  void _logout(BuildContext context) {
+  Future<void> _logout(BuildContext context) async {
+    await FirebaseAuth.instance.signOut();
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(builder: (context) => const WelcomePage()),
