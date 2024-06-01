@@ -1,7 +1,23 @@
 import 'package:google_geocoding_api/google_geocoding_api.dart';
+import 'package:oilsavings/models/GasStationModel.dart'; // Asegúrate de importar correctamente tus modelos
 
 class GeocodingService {
-  final String apiKey = 'AIzaSyBmaXLlR-Pfgm1sfn-8oALHvu9Zf1fWT7k';
+  final String apiKey = 'AIzaSyC4EClbyk-lhTAV0qURaU8uUdHxSeiMuhA';
+
+  Future<GasStationData> fetchCoordinates(GasStationData station) async {
+    final api = GoogleGeocodingApi(apiKey);
+    if (station.address != null) {
+      final searchResults = await api.search(station.address!, language: 'es');
+      if (searchResults.results.isNotEmpty) {
+        final location = searchResults.results.first.geometry!.location;
+        station.latitude = location.lat;
+        station.longitude = location.lng;
+      }
+    } else {
+      throw Exception("La dirección de la gasolinera no puede ser nula.");
+    }
+    return station;
+  }
 
   Future<GoogleGeocodingResponse> getCoords(String direction) async {
     final api = GoogleGeocodingApi(apiKey);
@@ -12,13 +28,19 @@ class GeocodingService {
     return searchResults;
   }
 
-  Future<GoogleGeocodingResponse> getAdress(String lat, String long) async {
+  Future<String> getAdress(String lat, String long) async {
     final api = GoogleGeocodingApi(apiKey);
     final reversedSearchResults = await api.reverse(
-      "$lat, $long",
+      "$lat,$long",
       language: 'es',
     );
-    return reversedSearchResults;
+    // print(
+    //     "REVERSED SEARCH RESULTS ${reversedSearchResults.results.first.formattedAddress}");
+    if (reversedSearchResults.results.isNotEmpty) {
+      return reversedSearchResults.results.first.formattedAddress;
+    } else {
+      throw Exception('Failed to fetch address or no results found');
+    }
   }
 }
   // final geocodingService = GeocodingService();

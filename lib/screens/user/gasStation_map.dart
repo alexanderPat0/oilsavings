@@ -1,16 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_database/firebase_database.dart';
-import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:google_maps_flutter_android/google_maps_flutter_android.dart';
-import 'package:http/http.dart' as http;
 import 'package:oilsavings/models/GasStationModel.dart';
-import 'dart:convert';
-import 'package:chaleno/chaleno.dart';
+import 'package:oilsavings/services/addressCoordsService.dart';
 import 'package:oilsavings/services/gasStationService.dart';
-import 'package:oilsavings/services/userService.dart';
-import 'package:google_geocoding_api/google_geocoding_api.dart';
 
 class GasStationList extends StatefulWidget {
   final double latitude;
@@ -31,18 +23,77 @@ class GasStationList extends StatefulWidget {
 }
 
 class _GasStationListState extends State<GasStationList> {
-  final apiKey = 'AIzaSyBmaXLlR-Pfgm1sfn-8oALHvu9Zf1fWT7k';
+  final apiKey = 'AIzaSyC4EClbyk-lhTAV0qURaU8uUdHxSeiMuhA';
+  List<GasStationData>? _stations;
+  final GeocodingService _geocodingService = GeocodingService();
+  late GoogleMapController mapController;
+  Set<Marker> markers = {};
 
   @override
   void initState() {
     super.initState();
-    // _gasStationService.fetchGasStations();
-    // _fetchPrices();
+    _fetchGasStations();
+  }
+
+  void _fetchGasStations() async {
+    print(
+        "LATITUD Y LONGITUD: ${widget.latitude.toString()},${widget.longitude.toString()}");
+    print("COMBUSTIBLE PREFERIDO: ${widget.favoriteFuelType}");
+    print("RADIO STRING: ${widget.radius.toString()}");
+    String formattedAddress = await _geocodingService.getAdress(
+        widget.latitude.toString(), widget.longitude.toString());
+
+    print('FORMATTED ADDRESS: $formattedAddress');
+
+    var stations = await GasStationService().fetchGasStations(
+      formattedAddress,
+      widget.favoriteFuelType,
+      widget.radius.toString(),
+    );
+
+    List<GasStationData> tempStations = [];
+    for (var station in stations) {
+      try {
+        var updatedStation = await _geocodingService.fetchCoordinates(station);
+        print("GASOLINERA ACTUALIZADA: ${updatedStation.toString()}");
+        tempStations.add(updatedStation);
+      } catch (e) {
+        print('Error fetching coordinates: $e');
+      }
+    }
+
+    setState(() {
+      _stations = tempStations;
+      markers = _stations!
+          .map((station) => Marker(
+                markerId: MarkerId(station.id.toString()),
+                position: LatLng(station.latitude!, station.longitude!),
+                infoWindow: InfoWindow(
+                  title: station.name,
+                  snippet:
+                      'Precio del ${widget.favoriteFuelType}: ${station.pricePerLiter}',
+                ),
+              ))
+          .toSet();
+    });
+  }
+
+  void _onMapCreated(GoogleMapController controller) {
+    mapController = controller;
   }
 
   @override
   Widget build(BuildContext context) {
-    // TODO: implement build
-    throw UnimplementedError();
+    return Scaffold(
+      appBar: AppBar(title: const Text("Gasolineras Cercanas")),
+      body: GoogleMap(
+        onMapCreated: _onMapCreated,
+        initialCameraPosition: CameraPosition(
+          target: LatLng(widget.latitude, widget.longitude),
+          zoom: 12.0,
+        ),
+        markers: markers,
+      ),
+    );
   }
 }

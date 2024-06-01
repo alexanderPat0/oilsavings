@@ -6,6 +6,8 @@ class GasStationData {
   String? costDeposit;
   String? distance;
   String? pricePerLiter;
+  double? latitude; // Agregar latitud
+  double? longitude; // Agregar longitud
 
   GasStationData({
     this.id,
@@ -15,6 +17,8 @@ class GasStationData {
     this.costDeposit,
     this.distance,
     this.pricePerLiter,
+    this.latitude,
+    this.longitude,
   });
 
   GasStationData.fromJson(Map<String, dynamic> json) {
@@ -25,6 +29,8 @@ class GasStationData {
     costDeposit = json['cost_deposit'] as String;
     distance = json['distance'] as String;
     pricePerLiter = json['price_per_liter'] as String;
+    latitude = json['latitude'] as double?;
+    longitude = json['longitude'] as double?;
   }
 
   Map<String, dynamic> toJson() {
@@ -36,6 +42,8 @@ class GasStationData {
       'cost_deposit': costDeposit,
       'distance': distance,
       'price_per_liter': pricePerLiter,
+      'latitude': latitude,
+      'longitude': longitude,
     };
   }
 }

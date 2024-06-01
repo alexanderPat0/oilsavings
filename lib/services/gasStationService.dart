@@ -8,9 +8,12 @@ class GasStationService {
   Future<List<GasStationData>> fetchGasStations(
       String address, String selectedFuel, String radius) async {
     String fuel = _convertFuelToValue(selectedFuel);
+    print('FUEL: $fuel');
+    print('ADDRESS: $address');
     final url =
-        'http://34.175.24.171:8080/scrape?address=${Uri.encodeComponent(address)}&selectedFuel=${Uri.encodeComponent(fuel)}&radius=${Uri.encodeComponent(radius)}';
+        'http://34.175.24.171:8080/scrape?address=$address&selectedFuel=$fuel&radius=$radius';
 
+    print('IMPRIMIR URL PARA PEDIR A PYTHON:---$url');
     try {
       final response = await http.get(Uri.parse(url));
       if (response.statusCode == 200) {

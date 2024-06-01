@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:oilsavings/models/ParkingModel.dart';
 
 class ParkingService {
-  final apiKey = 'AIzaSyBmaXLlR-Pfgm1sfn-8oALHvu9Zf1fWT7k';
+  final apiKey = 'AIzaSyC4EClbyk-lhTAV0qURaU8uUdHxSeiMuhA';
 
   Future<List<ParkingData>> fetchParking(
       String lat, String long, String radius) async {
