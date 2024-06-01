@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
@@ -7,7 +8,6 @@ import 'package:http/http.dart' as http;
 import 'package:oilsavings/models/GasStationModel.dart';
 import 'dart:convert';
 import 'package:chaleno/chaleno.dart';
-import 'package:oilsavings/screens/user/route_station.dart';
 import 'package:oilsavings/services/gasStationService.dart';
 import 'package:oilsavings/services/userService.dart';
 import 'package:google_geocoding_api/google_geocoding_api.dart';
@@ -31,8 +31,6 @@ class GasStationList extends StatefulWidget {
 }
 
 class _GasStationListState extends State<GasStationList> {
-  // List<GasStationData> _stations = [];
-  // final GasStationService _gasStationService = GasStationService();
   final apiKey = 'AIzaSyBmaXLlR-Pfgm1sfn-8oALHvu9Zf1fWT7k';
 
   @override
@@ -46,23 +44,5 @@ class _GasStationListState extends State<GasStationList> {
   Widget build(BuildContext context) {
     // TODO: implement build
     throw UnimplementedError();
-  }
-
-  Future<GoogleGeocodingResponse> getCoords() async {
-    final api = GoogleGeocodingApi(apiKey);
-    final searchResults = await api.search(
-      'Boston',
-      language: 'es',
-    );
-    return searchResults;
-  }
-
-  Future<GoogleGeocodingResponse> getAdress() async {
-    final api = GoogleGeocodingApi(apiKey);
-    final reversedSearchResults = await api.reverse(
-      '42.360083,-71.05888',
-      language: 'es',
-    );
-    return reversedSearchResults;
   }
 }

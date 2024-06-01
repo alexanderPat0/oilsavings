@@ -27,7 +27,7 @@ class GasStationService {
             'Failed to load gas stations with status code: ${response.statusCode}');
       }
     } catch (error) {
-      print('Error fetching gas stations: $error');
+      // print('Error fetching gas stations: $error');
       throw Exception('Failed to fetch gas stations');
     }
   }

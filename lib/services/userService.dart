@@ -74,23 +74,3 @@ class UserService {
     }
   }
 }
-  // Future<void> writeNewPost(
-  //     String uid, String gasStationId, String body) async {
-  //   final postData = {
-  //     'userId': uid,
-  //     'gasStationId': gasStationId,
-  //     'body': body,
-  //   };
-
-  //   // Get a key for a new post
-  //   final newPostKey = _database.ref().child('posts').push().key;
-
-  //   if (newPostKey != null) {
-  //     // Write the new post's data simultaneously in the posts list and the user's post list
-  //     final Map<String, Map> updates = {};
-  //     updates['/posts/$newPostKey'] = postData;
-  //     updates['/user-posts/$uid/$newPostKey'] = postData;
-
-  //     await _database.ref().update(updates);
-  //   }
-  // }

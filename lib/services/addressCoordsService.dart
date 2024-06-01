@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:google_geocoding_api/google_geocoding_api.dart';
 
 class GeocodingService {

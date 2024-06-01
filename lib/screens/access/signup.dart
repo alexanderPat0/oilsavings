@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:oilsavings/screens/user/main_screen.dart';
 import 'login.dart';
 import 'package:animate_do/animate_do.dart';
-import 'package:firebase_database/firebase_database.dart';
 import 'package:oilsavings/services/userService.dart';
 
 final UserService _userServices = UserService();
@@ -134,8 +133,11 @@ class TextFormFieldDemoState extends State<TextFormFieldDemo>
       return;
     }
 
-    if (mail.isEmpty || password.isEmpty) {
-      showInSnackBarError('Email and password cannot be empty');
+    if (username.isEmpty ||
+        mail.isEmpty ||
+        password.isEmpty ||
+        confirmPassword.isEmpty) {
+      showInSnackBarError('Some data might be missing');
       return;
     }
 
@@ -154,7 +156,6 @@ class TextFormFieldDemoState extends State<TextFormFieldDemo>
       }
     } on FirebaseAuthException catch (e) {
       String errorMessage;
-      print('Error al registrar usuario 1: $e');
       if (e.code == 'weak-password') {
         errorMessage = 'The password provided is too weak.';
       } else if (e.code == 'email-already-in-use') {
@@ -164,7 +165,6 @@ class TextFormFieldDemoState extends State<TextFormFieldDemo>
       }
       showInSnackBarError(errorMessage);
     } catch (e) {
-      print('Error al registrar usuario: $e');
       showInSnackBarError('An error occurred. Please try again. ');
     } finally {
       if (mounted) {

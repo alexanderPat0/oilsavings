@@ -1,10 +1,12 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:oilsavings/screens/user/gas_station_map.dart';
-import 'package:oilsavings/services/userService.dart';
+import 'package:oilsavings/screens/user/parking_map.dart';
 import 'package:permission_handler/permission_handler.dart';
 
+import 'package:oilsavings/screens/user/carWash_map.dart';
+import 'package:oilsavings/services/userService.dart';
 import 'package:oilsavings/screens/access/welcome.dart';
 
 class MainScreen extends StatefulWidget {
@@ -18,6 +20,7 @@ class _MainScreenState extends State<MainScreen> {
   double _currentSliderValue = 2;
   Position? _currentPosition;
   String? _favoriteFuelType;
+  String? _username;
   final user = FirebaseAuth.instance.currentUser;
 
   final List<String> _fuelTypes = [
@@ -33,6 +36,7 @@ class _MainScreenState extends State<MainScreen> {
     _checkPermissionsAndService();
     _getCurrentLocation();
     _loadUserMainFuel();
+    _loadUsername();
   }
 
   Future<Position?> _getCurrentLocation() async {
@@ -42,17 +46,6 @@ class _MainScreenState extends State<MainScreen> {
           desiredAccuracy: LocationAccuracy.high);
     }
     return null;
-  }
-
-  void _comprobarUsuarioLoggeado() {
-    if (FirebaseAuth.instance.currentUser == null) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const WelcomePage()),
-      );
-    } else {
-      print(FirebaseAuth.instance.currentUser!.email);
-    }
   }
 
   void _checkPermissionsAndService() async {
@@ -81,25 +74,26 @@ class _MainScreenState extends State<MainScreen> {
     }
   }
 
-  void _getGasStations(BuildContext context, VoidCallback onSuccess) async {
+  void _getLocationAndProceed(BuildContext context, VoidCallback onSuccess,
+      Widget Function(double, double, int) navigateToPage) async {
     if (await Permission.locationWhenInUse.isGranted &&
         await Geolocator.isLocationServiceEnabled()) {
-      _currentPosition =
-          await _getCurrentLocation(); // Get the current position and wait for it
+      _currentPosition = await _getCurrentLocation();
       if (_currentPosition != null) {
-        print(
-            '\n\nCurrent Latitude:  ${_currentPosition!.latitude}, Longitude: ${_currentPosition!.longitude}, Radio: ${(_currentSliderValue * 1000).toInt()}');
+        // Asegurarme de que los datos se envían bien
+        // print(
+        //     '\n\nCurrent Latitude:  ${_currentPosition!.latitude}, Longitude: ${_currentPosition!.longitude}, Radio: ${(_currentSliderValue * 1000).toInt()}');
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => GasStationList(
-              favoriteFuelType: _favoriteFuelType!,
-              latitude: _currentPosition!.latitude,
-              longitude: _currentPosition!.longitude,
-              radius: (_currentSliderValue).toInt(),
+            builder: (context) => navigateToPage(
+              _currentPosition!.latitude,
+              _currentPosition!.longitude,
+              (_currentSliderValue).toInt(),
             ),
           ),
         );
+        onSuccess();
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -119,9 +113,45 @@ class _MainScreenState extends State<MainScreen> {
     }
   }
 
+  void _getGasStations(BuildContext context, VoidCallback onSuccess) {
+    // _getLocationAndProceed(
+    //   context,
+    //   onSuccess,
+    //   (latitude, longitude, radius) => GasStationList(
+    //     favoriteFuelType: _favoriteFuelType!,
+    //     latitude: latitude,
+    //     longitude: longitude,
+    //     radius: radius,
+    //   ),
+    // );
+  }
+
+  void _getCarWash(BuildContext context, VoidCallback onSuccess) {
+    _getLocationAndProceed(
+      context,
+      onSuccess,
+      (latitude, longitude, radius) => CarWashList(
+        latitude: latitude,
+        longitude: longitude,
+        radius: radius,
+      ),
+    );
+  }
+
+  void _getParking(BuildContext context, VoidCallback onSuccess) {
+    _getLocationAndProceed(
+      context,
+      onSuccess,
+      (latitude, longitude, radius) => ParkingList(
+        latitude: latitude,
+        longitude: longitude,
+        radius: radius,
+      ),
+    );
+  }
+
   Future<void> _loadUserMainFuel() async {
     if (user != null) {
-      String userId = user!.uid;
       try {
         String mainFuel = await UserService().getMainFuel();
         if (_fuelTypes.contains(mainFuel)) {
@@ -134,7 +164,8 @@ class _MainScreenState extends State<MainScreen> {
           });
         }
       } catch (e) {
-        print('Error fetching main fuel: $e');
+        // Imprimo error
+        // print('Error fetching main fuel: $e');
         setState(() {
           _favoriteFuelType = _fuelTypes.first;
         });
@@ -142,9 +173,22 @@ class _MainScreenState extends State<MainScreen> {
     }
   }
 
+  Future<void> _loadUsername() async {
+    if (user != null) {
+      try {
+        String username = await UserService().getUsername();
+        setState(() {
+          _username = username;
+        });
+      } catch (e) {
+        // Imprimo error
+        // print('Error fetching username: $e');
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    _comprobarUsuarioLoggeado();
     return Scaffold(
       body: SafeArea(
         child: Stack(
@@ -162,26 +206,14 @@ class _MainScreenState extends State<MainScreen> {
               right: 20,
               child: Align(
                 alignment: Alignment.topRight,
-                child: FutureBuilder<String>(
-                  future: UserService().getUsername(),
-                  builder:
-                      (BuildContext context, AsyncSnapshot<String> snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return const Text("Loading...");
-                    } else if (snapshot.hasError) {
-                      return Text("Error: ${snapshot.error}");
-                    } else if (snapshot.hasData) {
-                      return Text(
-                        "Hello ${snapshot.data}!",
+                child: _username != null
+                    ? Text(
+                        "Hello $_username!",
                         overflow: TextOverflow.ellipsis,
                         maxLines: 2,
                         style: const TextStyle(fontSize: 16),
-                      );
-                    } else {
-                      return const Text("No username found");
-                    }
-                  },
-                ),
+                      )
+                    : const Text("Loading..."),
               ),
             ),
             Center(
@@ -199,31 +231,51 @@ class _MainScreenState extends State<MainScreen> {
                     ),
                   ),
                   const SizedBox(height: 5),
-                  FutureBuilder<String>(
-                    future: user != null
-                        ? UserService().getMainFuel()
-                        : Future.value(null),
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return const CircularProgressIndicator();
-                      } else if (snapshot.hasData) {
-                        _favoriteFuelType = snapshot.data!;
-                        return _buildDropdown();
-                      } else {
-                        return const Text("Failed to load fuel type");
-                      }
-                    },
-                  ),
+                  _favoriteFuelType != null
+                      ? _buildDropdown()
+                      : const CircularProgressIndicator(),
                   const SizedBox(height: 20),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      _buildSmallButton(context, 'Option 1', () {}),
-                      _buildSmallButton(context, 'Option 2', () {}),
-                      _buildSmallButton(context, 'Option 3', () {}),
-                      _buildSmallButton(context, 'Option 4', () {}),
+                      Column(
+                        children: [
+                          TextButton(
+                            onPressed: () => _getCarWash(context, () {}),
+                            child: Image.asset(
+                              "imgs/randomIcon/sponge.png",
+                              width: 100,
+                              height: 100,
+                            ),
+                          ),
+                          const Text(
+                            'Nearby\ncar washes',
+                            maxLines: 2,
+                            textAlign: TextAlign.center,
+                          )
+                        ],
+                      ),
+                      const SizedBox(width: 20),
+                      Column(
+                        children: [
+                          TextButton(
+                            onPressed: () => _getParking(context, () {}),
+                            child: Image.asset(
+                              "imgs/randomIcon/parkingIcon.png",
+                              width: 100,
+                              height: 100,
+                            ),
+                          ),
+                          const Text(
+                            'Nearby\nparkings',
+                            maxLines: 2,
+                            textAlign: TextAlign.center,
+                          )
+                        ],
+                      ),
                     ],
                   ),
+                  const SizedBox(height: 40),
                   const Center(
                     child: Text('Searching Range (in km):'),
                   ),
@@ -263,37 +315,11 @@ class _MainScreenState extends State<MainScreen> {
           onChanged: (newValue) {
             UserService().changeMainFuel(newValue!);
             setState(() {
-              _favoriteFuelType = newValue!;
+              _favoriteFuelType = newValue;
             });
           },
         ),
       ],
-    );
-  }
-
-  Widget _buildSmallButton(
-      BuildContext context, String label, VoidCallback onPress) {
-    return Container(
-      margin: const EdgeInsets.all(10),
-      width: 60,
-      height: 60,
-      decoration: BoxDecoration(
-        color: Colors.orange.shade600,
-        shape: BoxShape.circle,
-      ),
-      child: Center(
-        child: TextButton(
-          onPressed: () => () {},
-          child: Text(
-            label,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 12,
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ),
-      ),
     );
   }
 
