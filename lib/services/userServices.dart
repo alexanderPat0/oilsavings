@@ -45,6 +45,21 @@ class UserServices {
     }
   }
 
+  Future<String> getUsername() async {
+    try {
+      User? user = _auth.currentUser;
+      String userId = user!.uid;
+      final snapshot = await _dbRef.child('users/$userId/username').get();
+      if (snapshot.exists) {
+        return snapshot.value.toString();
+      } else {
+        throw Exception("Couldn't find user: $userId");
+      }
+    } catch (e) {
+      throw Exception('Error getting user: $e');
+    }
+  }
+
   Future<void> changeMainFuel(String mainFuel) async {
     try {
       User? user = _auth.currentUser;

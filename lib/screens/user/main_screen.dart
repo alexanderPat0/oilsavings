@@ -157,6 +157,33 @@ class _MainScreenState extends State<MainScreen> {
                 onPressed: () => _logout(context),
               ),
             ),
+            Positioned(
+              top: 10,
+              right: 20,
+              child: Align(
+                alignment: Alignment.topRight,
+                child: FutureBuilder<String>(
+                  future: UserServices().getUsername(),
+                  builder:
+                      (BuildContext context, AsyncSnapshot<String> snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Text("Loading...");
+                    } else if (snapshot.hasError) {
+                      return Text("Error: ${snapshot.error}");
+                    } else if (snapshot.hasData) {
+                      return Text(
+                        "Hello ${snapshot.data}!",
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 2,
+                        style: const TextStyle(fontSize: 16),
+                      );
+                    } else {
+                      return const Text("No username found");
+                    }
+                  },
+                ),
+              ),
+            ),
             Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -178,12 +205,12 @@ class _MainScreenState extends State<MainScreen> {
                         : Future.value(null),
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
-                        return CircularProgressIndicator();
+                        return const CircularProgressIndicator();
                       } else if (snapshot.hasData) {
                         _favoriteFuelType = snapshot.data!;
                         return _buildDropdown();
                       } else {
-                        return Text("Failed to load fuel type");
+                        return const Text("Failed to load fuel type");
                       }
                     },
                   ),
