@@ -8,7 +8,7 @@ import 'package:oilsavings/models/GasStationModel.dart';
 import 'dart:convert';
 import 'package:chaleno/chaleno.dart';
 import 'package:oilsavings/screens/user/route_station.dart';
-import 'package:oilsavings/services/userServices.dart';
+import 'package:oilsavings/services/userService.dart';
 
 class GasStationList extends StatefulWidget {
   final double latitude;

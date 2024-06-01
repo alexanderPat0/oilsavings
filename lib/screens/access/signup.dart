@@ -4,9 +4,9 @@ import 'package:oilsavings/screens/user/main_screen.dart';
 import 'login.dart';
 import 'package:animate_do/animate_do.dart';
 import 'package:firebase_database/firebase_database.dart';
-import 'package:oilsavings/services/userServices.dart';
+import 'package:oilsavings/services/userService.dart';
 
-final UserServices _userServices = UserServices();
+final UserService _userServices = UserService();
 
 class TextFieldDemo extends StatelessWidget {
   const TextFieldDemo({super.key});

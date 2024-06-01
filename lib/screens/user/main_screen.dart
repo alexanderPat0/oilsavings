@@ -2,7 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:oilsavings/screens/user/gas_station_map.dart';
-import 'package:oilsavings/services/userServices.dart';
+import 'package:oilsavings/services/userService.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 import 'package:oilsavings/screens/access/welcome.dart';
@@ -123,7 +123,7 @@ class _MainScreenState extends State<MainScreen> {
     if (user != null) {
       String userId = user!.uid;
       try {
-        String mainFuel = await UserServices().getMainFuel();
+        String mainFuel = await UserService().getMainFuel();
         if (_fuelTypes.contains(mainFuel)) {
           setState(() {
             _favoriteFuelType = mainFuel;
@@ -163,7 +163,7 @@ class _MainScreenState extends State<MainScreen> {
               child: Align(
                 alignment: Alignment.topRight,
                 child: FutureBuilder<String>(
-                  future: UserServices().getUsername(),
+                  future: UserService().getUsername(),
                   builder:
                       (BuildContext context, AsyncSnapshot<String> snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
@@ -201,7 +201,7 @@ class _MainScreenState extends State<MainScreen> {
                   const SizedBox(height: 5),
                   FutureBuilder<String>(
                     future: user != null
-                        ? UserServices().getMainFuel()
+                        ? UserService().getMainFuel()
                         : Future.value(null),
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
@@ -261,7 +261,7 @@ class _MainScreenState extends State<MainScreen> {
             );
           }).toList(),
           onChanged: (newValue) {
-            UserServices().changeMainFuel(newValue!);
+            UserService().changeMainFuel(newValue!);
             setState(() {
               _favoriteFuelType = newValue!;
             });

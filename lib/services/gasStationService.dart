@@ -7,8 +7,9 @@ import 'package:oilsavings/models/GasStationModel.dart';
 class GasStationService {
   Future<List<GasStationData>> fetchGasStations(
       String address, String selectedFuel, String radius) async {
+    String fuel = _convertFuelToValue(selectedFuel);
     final url =
-        'http://34.175.24.171:8080/scrape?address=${Uri.encodeComponent(address)}&selectedFuel=${Uri.encodeComponent(selectedFuel)}&radius=${Uri.encodeComponent(radius)}';
+        'http://34.175.24.171:8080/scrape?address=${Uri.encodeComponent(address)}&selectedFuel=${Uri.encodeComponent(fuel)}&radius=${Uri.encodeComponent(radius)}';
 
     try {
       final response = await http.get(Uri.parse(url));
@@ -28,6 +29,21 @@ class GasStationService {
     } catch (error) {
       print('Error fetching gas stations: $error');
       throw Exception('Failed to fetch gas stations');
+    }
+  }
+
+  String _convertFuelToValue(String selectedFuel) {
+    switch (selectedFuel) {
+      case 'Sin Plomo 95':
+        return 'GPR';
+      case 'Sin Plomo 98':
+        return 'G98';
+      case 'Diesel':
+        return 'GOA';
+      case 'Diesel+':
+        return 'NGO';
+      default:
+        return '';
     }
   }
 }
