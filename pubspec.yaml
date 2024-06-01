@@ -10,7 +10,7 @@ dependencies:
   chaleno: ^0.0.8
   email_validator: ^2.1.17
   firebase_auth: ^4.20.0
-  firebase_core: ^2.31.1
+  firebase_core: ^2.32.0
   firebase_database: ^10.5.7
   firebase_storage: ^11.7.7
   flutter:
@@ -24,6 +24,7 @@ dependencies:
   googleapis_auth: ^1.6.0
   html: ^0.15.4
   http: ^1.2.1
+  icons_launcher: ^2.1.7
   loading_animation_widget: ^1.2.1
   location: ^6.0.2
   permission_handler: ^11.3.1

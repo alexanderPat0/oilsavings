@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:oilsavings/screens/user/gas_station_map.dart';
+import 'package:oilsavings/services/userServices.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 import 'package:oilsavings/screens/access/welcome.dart';
@@ -14,17 +15,25 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
-  double _currentSliderValue = 2; // Valor inicial del slider
+  double _currentSliderValue = 2;
   Position? _currentPosition;
-
-// Suggested code may be subject to a license. Learn more: ~LicenseLog:2334053744.
+  String? _favoriteFuelType;
   final user = FirebaseAuth.instance.currentUser;
+
+  final List<String> _fuelTypes = [
+    'Sin preferencia',
+    'Sin Plomo 95',
+    'Sin Plomo 98',
+    'Diesel',
+    'Diesel+',
+  ];
 
   @override
   void initState() {
     super.initState();
     _checkPermissionsAndService();
     _getCurrentLocation();
+    _loadUserMainFuel();
   }
 
   Future<Position?> _getCurrentLocation() async {
@@ -55,7 +64,6 @@ class _MainScreenState extends State<MainScreen> {
 
     bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
-      // Prompt the user to enable the location services.
       showDialog(
         context: context,
         builder: (BuildContext context) {
@@ -74,7 +82,7 @@ class _MainScreenState extends State<MainScreen> {
     }
   }
 
-  void _handleButtonPress(BuildContext context, VoidCallback onSuccess) async {
+  void _getGasStations(BuildContext context, VoidCallback onSuccess) async {
     if (await Permission.locationWhenInUse.isGranted &&
         await Geolocator.isLocationServiceEnabled()) {
       _currentPosition =
@@ -86,9 +94,10 @@ class _MainScreenState extends State<MainScreen> {
           context,
           MaterialPageRoute(
             builder: (context) => GasStationList(
+              favoriteFuelType: _favoriteFuelType!,
               latitude: _currentPosition!.latitude,
               longitude: _currentPosition!.longitude,
-              radius: (_currentSliderValue * 1000).toInt(),
+              radius: (_currentSliderValue).toInt(),
             ),
           ),
         );
@@ -111,6 +120,29 @@ class _MainScreenState extends State<MainScreen> {
     }
   }
 
+  Future<void> _loadUserMainFuel() async {
+    if (user != null) {
+      String userId = user!.uid;
+      try {
+        String mainFuel = await UserServices().getMainFuel(userId);
+        if (_fuelTypes.contains(mainFuel)) {
+          setState(() {
+            _favoriteFuelType = mainFuel;
+          });
+        } else {
+          setState(() {
+            _favoriteFuelType = _fuelTypes.first;
+          });
+        }
+      } catch (e) {
+        print('Error fetching main fuel: $e');
+        setState(() {
+          _favoriteFuelType = _fuelTypes.first;
+        });
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     _comprobarUsuarioLoggeado();
@@ -126,32 +158,48 @@ class _MainScreenState extends State<MainScreen> {
                 onPressed: () => _logout(context),
               ),
             ),
+            Positioned(
+              top: 10,
+              right: 20,
+              child: Align(
+                alignment: Alignment.topRight,
+                child: Column(
+                  children: [
+                    const Text("Preferred fuel: "),
+                    if (_favoriteFuelType != null)
+                      DropdownButton<String>(
+                        value: _favoriteFuelType,
+                        items: _fuelTypes.map((String value) {
+                          return DropdownMenuItem<String>(
+                            value: value,
+                            child: Text(value),
+                          );
+                        }).toList(),
+                        onChanged: (newValue) {
+                          setState(() {
+                            _favoriteFuelType = newValue!;
+                          });
+                        },
+                      ),
+                  ],
+                ),
+              ),
+            ),
             Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Container(
-                    margin: const EdgeInsets.all(10),
-                    width: 100,
-                    height: 100,
-                    decoration: BoxDecoration(
-                      color: Colors.orange.shade800,
-                      shape: BoxShape.circle,
-                    ),
-                    child: Center(
-                      child: TextButton(
-                        onPressed: () => _handleButtonPress(context, () {}),
-                        child: const Text(
-                          'Main',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
+                  TextButton(
+                    onPressed: () => _getGasStations(context, () {}),
+                    child: Image.asset(
+                      "imgs/randomIcon/oilsavings.png",
+                      width: 100,
+                      height: 100,
                     ),
                   ),
+                  const SizedBox(height: 5),
+                  const Text("Nearby fuel stations"),
+                  const SizedBox(height: 20),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -197,7 +245,7 @@ class _MainScreenState extends State<MainScreen> {
       ),
       child: Center(
         child: TextButton(
-          onPressed: () => _handleButtonPress(context, onPress),
+          onPressed: () => () {},
           child: Text(
             label,
             style: const TextStyle(
