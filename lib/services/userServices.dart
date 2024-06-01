@@ -30,20 +30,22 @@ class UserServices {
     }
   }
 
-  Future<String> getMainFuel(String userId) async {
-    final snapshot = await _dbRef.child('users/$userId/mainFuel').get();
-    print('Snapshot dentro del getMainFuel: ${snapshot.toString()}');
-    print(
-        'Value del snapshot dentro del getMainFuel: ${snapshot.value.toString()}');
-
-    if (snapshot.exists) {
-      return snapshot.value.toString();
-    } else {
-      throw Exception('MainFuel not found for user: $userId');
+  Future<String> getMainFuel() async {
+    try {
+      User? user = _auth.currentUser;
+      String userId = user!.uid;
+      final snapshot = await _dbRef.child('users/$userId/mainFuel').get();
+      if (snapshot.exists) {
+        return snapshot.value.toString();
+      } else {
+        throw Exception('MainFuel not found for user: $userId');
+      }
+    } catch (e) {
+      throw Exception('Error getting user mainFuel: $e');
     }
   }
 
-  Future<void> changeMainFuel(String mainFuel, String userId) async {
+  Future<void> changeMainFuel(String mainFuel) async {
     try {
       User? user = _auth.currentUser;
       if (user != null) {

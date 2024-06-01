@@ -144,7 +144,7 @@ class TextFormFieldDemoState extends State<TextFormFieldDemo>
     });
 
     try {
-      await _userServices.signUp(mail, password, username, "Sin preferencia");
+      await _userServices.signUp(mail, password, username, "Sin Plomo 95");
       showInSnackBarSuccess('User registered successfully!');
       if (mounted) {
         Navigator.pushReplacement(

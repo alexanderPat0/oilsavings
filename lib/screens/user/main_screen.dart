@@ -21,7 +21,6 @@ class _MainScreenState extends State<MainScreen> {
   final user = FirebaseAuth.instance.currentUser;
 
   final List<String> _fuelTypes = [
-    'Sin preferencia',
     'Sin Plomo 95',
     'Sin Plomo 98',
     'Diesel',
@@ -124,7 +123,7 @@ class _MainScreenState extends State<MainScreen> {
     if (user != null) {
       String userId = user!.uid;
       try {
-        String mainFuel = await UserServices().getMainFuel(userId);
+        String mainFuel = await UserServices().getMainFuel();
         if (_fuelTypes.contains(mainFuel)) {
           setState(() {
             _favoriteFuelType = mainFuel;
@@ -158,37 +157,12 @@ class _MainScreenState extends State<MainScreen> {
                 onPressed: () => _logout(context),
               ),
             ),
-            Positioned(
-              top: 10,
-              right: 20,
-              child: Align(
-                alignment: Alignment.topRight,
-                child: Column(
-                  children: [
-                    const Text("Preferred fuel: "),
-                    if (_favoriteFuelType != null)
-                      DropdownButton<String>(
-                        value: _favoriteFuelType,
-                        items: _fuelTypes.map((String value) {
-                          return DropdownMenuItem<String>(
-                            value: value,
-                            child: Text(value),
-                          );
-                        }).toList(),
-                        onChanged: (newValue) {
-                          setState(() {
-                            _favoriteFuelType = newValue!;
-                          });
-                        },
-                      ),
-                  ],
-                ),
-              ),
-            ),
             Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
+                  const Text("Nearby fuel stations"),
+                  const SizedBox(height: 5),
                   TextButton(
                     onPressed: () => _getGasStations(context, () {}),
                     child: Image.asset(
@@ -198,7 +172,21 @@ class _MainScreenState extends State<MainScreen> {
                     ),
                   ),
                   const SizedBox(height: 5),
-                  const Text("Nearby fuel stations"),
+                  FutureBuilder<String>(
+                    future: user != null
+                        ? UserServices().getMainFuel()
+                        : Future.value(null),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return CircularProgressIndicator();
+                      } else if (snapshot.hasData) {
+                        _favoriteFuelType = snapshot.data!;
+                        return _buildDropdown();
+                      } else {
+                        return Text("Failed to load fuel type");
+                      }
+                    },
+                  ),
                   const SizedBox(height: 20),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -230,6 +218,29 @@ class _MainScreenState extends State<MainScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildDropdown() {
+    return Column(
+      children: [
+        const Text("Preferred fuel: "),
+        DropdownButton<String>(
+          value: _favoriteFuelType,
+          items: _fuelTypes.map((String value) {
+            return DropdownMenuItem<String>(
+              value: value,
+              child: Text(value),
+            );
+          }).toList(),
+          onChanged: (newValue) {
+            UserServices().changeMainFuel(newValue!);
+            setState(() {
+              _favoriteFuelType = newValue!;
+            });
+          },
+        ),
+      ],
     );
   }
 
