@@ -13,6 +13,7 @@ class ParkingService {
         '&radius=$rad'
         '&type=parking'
         '&key=$apiKey';
+    print('URL: $url');
 
     try {
       final response = await http.get(Uri.parse(url));
@@ -24,7 +25,7 @@ class ParkingService {
         throw Exception('Failed to load parking locations');
       }
     } catch (error) {
-      // print('Error fetching parking locations: $error');
+      print('Error fetching parking locations: $error');
       return [];
     }
   }
