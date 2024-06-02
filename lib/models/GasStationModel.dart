@@ -6,8 +6,8 @@ class GasStationData {
   String? costDeposit;
   String? distance;
   String? pricePerLiter;
-  double? latitude; // Agregar latitud
-  double? longitude; // Agregar longitud
+  double? latitude; // This will be set later once geocoded
+  double? longitude; // This will be set later once geocoded
 
   GasStationData({
     this.id,
@@ -21,16 +21,18 @@ class GasStationData {
     this.longitude,
   });
 
-  GasStationData.fromJson(Map<String, dynamic> json) {
-    id = json['id'] as String;
-    name = json['name'] as String;
-    address = json['address'] as String;
-    addressUrl = json['address_url'] as String;
-    costDeposit = json['cost_deposit'] as String;
-    distance = json['distance'] as String;
-    pricePerLiter = json['price_per_liter'] as String;
-    latitude = json['latitude'] as double?;
-    longitude = json['longitude'] as double?;
+  factory GasStationData.fromJson(Map<String, dynamic> json) {
+    return GasStationData(
+      id: json['id'] as String?,
+      name: json['name'] as String?,
+      address: json['address'] as String?,
+      addressUrl: json['address_url'] as String?,
+      costDeposit: json['cost_deposit'] as String?,
+      distance: json['distance'] as String?,
+      pricePerLiter: json['price_per_liter'] as String?,
+      latitude: null, // Latitude and longitude are not directly from JSON
+      longitude: null, // These will be set post instantiation
+    );
   }
 
   Map<String, dynamic> toJson() {

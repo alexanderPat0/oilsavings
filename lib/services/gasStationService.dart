@@ -8,19 +8,18 @@ class GasStationService {
   Future<List<GasStationData>> fetchGasStations(
       String address, String selectedFuel, String radius) async {
     String fuel = _convertFuelToValue(selectedFuel);
-    print('FUEL: $fuel');
-    print('ADDRESS: $address');
     final url =
         'http://34.175.24.171:8080/scrape?address=$address&selectedFuel=$fuel&radius=$radius';
-
-    print('IMPRIMIR URL PARA PEDIR A PYTHON:---$url');
+    print("URL: $url");
     try {
       final response = await http.get(Uri.parse(url));
       if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        if (data != null) {
-          List<GasStationData> stations =
-              data.map((json) => GasStationData.fromJson(json)).toList();
+        final data = json.decode(response.body) as List;
+        if (data.isNotEmpty) {
+          List<GasStationData> stations = data
+              .map<GasStationData>((jsonItem) =>
+                  GasStationData.fromJson(jsonItem as Map<String, dynamic>))
+              .toList();
           return stations;
         } else {
           throw Exception('No results found in the API response');
@@ -30,7 +29,7 @@ class GasStationService {
             'Failed to load gas stations with status code: ${response.statusCode}');
       }
     } catch (error) {
-      // print('Error fetching gas stations: $error');
+      print('Error fetching gas stations: $error');
       throw Exception('Failed to fetch gas stations');
     }
   }
