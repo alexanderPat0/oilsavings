@@ -1,5 +1,7 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:oilsavings/models/CarWashModel.dart';
+import 'package:oilsavings/screens/user/reviewScreen.dart';
 import 'package:oilsavings/services/carWashService.dart';
 
 class CarWashList extends StatefulWidget {
@@ -21,6 +23,7 @@ class CarWashList extends StatefulWidget {
 class _CarWashListState extends State<CarWashList> {
   List<CarWashData> _stations = [];
   bool _isLoading = true;
+  final String userId = FirebaseAuth.instance.currentUser!.uid;
   final CarWashService _carWashService = CarWashService();
 
   @override
@@ -88,6 +91,20 @@ class _CarWashListState extends State<CarWashList> {
                   child: ExpansionTile(
                     title: Text(station.name ?? 'Name not available'),
                     subtitle: Text(station.vicinity ?? 'No address available'),
+                    trailing: IconButton(
+                      icon: Icon(Icons.rate_review),
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ReviewScreen(
+                              placeId: station.placeId,
+                              userId: userId,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
                     children: <Widget>[
                       Padding(
                         padding: const EdgeInsets.all(16.0),

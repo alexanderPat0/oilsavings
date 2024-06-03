@@ -19,7 +19,6 @@ class ParkingData {
   String? businessStatus;
   double? latitude;
   double? longitude;
-  String? id;
   String? name;
   bool? openNow;
   String? placeId;
@@ -31,7 +30,6 @@ class ParkingData {
     this.businessStatus,
     this.latitude,
     this.longitude,
-    this.id,
     this.name,
     this.openNow,
     this.placeId,

@@ -19,7 +19,6 @@ class CarWashData {
   String? businessStatus;
   double? latitude;
   double? longitude;
-  String? id;
   String? name;
   bool? openNow;
   String? placeId;
@@ -31,7 +30,6 @@ class CarWashData {
     this.businessStatus,
     this.latitude,
     this.longitude,
-    this.id,
     this.name,
     this.openNow,
     this.placeId,
@@ -44,7 +42,6 @@ class CarWashData {
     businessStatus = json['business_status'] as String?;
     latitude = (json['geometry']['location']['lat'] as num?)?.toDouble();
     longitude = (json['geometry']['location']['lng'] as num?)?.toDouble();
-    id = json['id'] as String?;
     name = json['name'] as String?;
     openNow = json['opening_hours'] != null
         ? json['opening_hours']['open_now'] as bool?
