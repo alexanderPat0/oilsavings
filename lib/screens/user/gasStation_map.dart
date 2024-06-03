@@ -51,22 +51,25 @@ class _GasStationListState extends State<GasStationList> {
       try {
         var updatedStation = await _geocodingService.fetchCoordinates(station);
         print("-----------");
-        print("COORDENADAS COLOCADAS POR LA API: ${updatedStation.latitude}, ${updatedStation.longitude}");
-        print("COORDENADAS EXACTAS SACADAS DE LA URL: ${updatedStation.addressUrl}");
+        print(
+            "COORDENADAS COLOCADAS POR LA API: ${updatedStation.latitude}, ${updatedStation.longitude}");
+        print(
+            "COORDENADAS EXACTAS SACADAS DE LA URL: ${updatedStation.addressUrl}");
         print("-----------");
-        try{
-        BitmapDescriptor icon = await _getMarkerIcon(updatedStation.name!);
-        tempMarkers.add(Marker(
-          markerId: MarkerId(updatedStation.id.toString()),
-          position: LatLng(updatedStation.latitude!, updatedStation.longitude!),
-          icon: icon,
-          infoWindow: InfoWindow(
-            title: updatedStation.name,
-            snippet:
-                'Precio del ${widget.favoriteFuelType}: ${updatedStation.pricePerLiter}\nDistancia: ${updatedStation.distance}',
-          ),
-        ));
-        }catch(e2){
+        try {
+          // BitmapDescriptor icon = await _getMarkerIcon(updatedStation.name!);
+          tempMarkers.add(Marker(
+            markerId: MarkerId(updatedStation.id.toString()),
+            position:
+                LatLng(updatedStation.latitude!, updatedStation.longitude!),
+            // icon: icon,
+            infoWindow: InfoWindow(
+              title: updatedStation.name,
+              snippet:
+                  'Precio del ${widget.favoriteFuelType}: ${updatedStation.pricePerLiter}\nDistancia: ${updatedStation.distance}',
+            ),
+          ));
+        } catch (e2) {
           print('ERROR PLACING MARKERS: $e2');
         }
       } catch (e) {
@@ -81,27 +84,28 @@ class _GasStationListState extends State<GasStationList> {
     });
   }
 
-  Future<BitmapDescriptor> _getMarkerIcon(String stationName) async {
-    String imagePath;
-    try {
-      if (stationName.toLowerCase().contains("cepsa")) {
-        imagePath = 'imgs/gas_station_img/markerCepsa.png';
-      } else if (stationName.toLowerCase().contains("bp")) {
-        imagePath = 'imgs/gas_station_img/markerBP.png';
-      } else if (stationName.toLowerCase().contains("repsol")) {
-        imagePath = 'imgs/gas_station_img/markerRepsol.png'; 
-      } else if (stationName.toLowerCase().contains("shell")) {
-        imagePath = 'imgs/gas_station_img/markerShell.png'; 
-      } else {
-        imagePath = 'imgs/gas_station_img/default_station.png';
-      }
-      return BitmapDescriptor.fromAssetImage(
-          const ImageConfiguration(size: Size(30, 30)), imagePath,
-          mipmaps: false);
-    } catch (e) {
-      return BitmapDescriptor.defaultMarker;
-    }
-  }
+  // INTENTO DE PONER IMÁGENES PERSONALIZADAS EN LOS MARKERS.
+  // Future<BitmapDescriptor> _getMarkerIcon(String stationName) async {
+  //   String imagePath;
+  //   try {
+  //     if (stationName.toLowerCase().contains("cepsa")) {
+  //       imagePath = 'imgs/gas_station_img/markerCepsa.png';
+  //     } else if (stationName.toLowerCase().contains("bp")) {
+  //       imagePath = 'imgs/gas_station_img/markerBP.png';
+  //     } else if (stationName.toLowerCase().contains("repsol")) {
+  //       imagePath = 'imgs/gas_station_img/markerRepsol.png';
+  //     } else if (stationName.toLowerCase().contains("shell")) {
+  //       imagePath = 'imgs/gas_station_img/markerShell.png';
+  //     } else {
+  //       imagePath = 'imgs/gas_station_img/default_station.png';
+  //     }
+  //     return BitmapDescriptor.fromAssetImage(
+  //         const ImageConfiguration(size: Size(30, 30)), imagePath,
+  //         mipmaps: false);
+  //   } catch (e) {
+  //     return BitmapDescriptor.defaultMarker;
+  //   }
+  // }
 
   void _onMapCreated(GoogleMapController controller) {
     mapController = controller;

@@ -4,47 +4,40 @@ import 'package:oilsavings/models/GasStationModel.dart'; // Asegúrate de import
 class GeocodingService {
   final String apiKey = 'AIzaSyC4EClbyk-lhTAV0qURaU8uUdHxSeiMuhA';
 
- Future<GasStationData> fetchCoordinates(GasStationData station) async {
-  RegExp regExp = RegExp(r'daddr=([^&]+)');
-  String url = station.addressUrl!;
+  Future<GasStationData> fetchCoordinates(GasStationData station) async {
+    RegExp regExp = RegExp(r'daddr=([^&]+)');
+    String url = station.addressUrl!;
 
-  RegExpMatch? match = regExp.firstMatch(url);
+    print("URL LLAMADA PARA CONSEGUIR LAS COORDS EXACTAS: $url");
 
-  if (match != null) {
-    String daddr = match.group(1)!;
-    print('El valor de daddr es: $daddr');
+    RegExpMatch? match = regExp.firstMatch(url);
 
-    List<String> stationCoords = daddr.split(",");
+    if (match != null) {
+      String daddr = match.group(1)!;
+      print('El valor de daddr es: $daddr');
 
-    if (stationCoords.length == 2) {
-      double? latitude = double.tryParse(stationCoords[0]);
-      double? longitude = double.tryParse(stationCoords[1]);
+      List<String> stationCoords = daddr.split(",");
 
-      if (latitude != null && longitude != null) {
-        station.latitude = latitude;
-        station.longitude = longitude;
-        print('Latitude: ${station.latitude}');
-        print('Longitude: ${station.longitude}');
+      if (stationCoords.length == 2) {
+        double? latitude = double.tryParse(stationCoords[0]);
+        double? longitude = double.tryParse(stationCoords[1]);
+
+        if (latitude != null && longitude != null) {
+          station.latitude = latitude;
+          station.longitude = longitude;
+          print('Latitude: ${station.latitude}');
+          print('Longitude: ${station.longitude}');
+        } else {
+          print('Error al convertir las coordenadas.');
+        }
       } else {
-        print('Error al convertir las coordenadas.');
+        print('Formato de coordenadas no válido.');
       }
     } else {
-      print('Formato de coordenadas no válido.');
+      print('No se encontró el valor de daddr');
     }
-  } else {
-    print('No se encontró el valor de daddr');
-  }
 
-  return station;
-}
-
-  Future<GoogleGeocodingResponse> getCoords(String direction) async {
-    final api = GoogleGeocodingApi(apiKey);
-    final searchResults = await api.search(
-      direction,
-      language: 'es',
-    );
-    return searchResults;
+    return station;
   }
 
   Future<String> getAdress(String lat, String long) async {
@@ -61,6 +54,7 @@ class GeocodingService {
       throw Exception('Failed to fetch address or no results found');
     }
   }
+
   Future<String> getPlaceID(String lat, String long) async {
     final api = GoogleGeocodingApi(apiKey);
     final reversedSearchResults = await api.reverse(
