@@ -50,6 +50,11 @@ class _GasStationListState extends State<GasStationList> {
     for (var station in stations) {
       try {
         var updatedStation = await _geocodingService.fetchCoordinates(station);
+        print("-----------");
+        print("COORDENADAS COLOCADAS POR LA API: ${updatedStation.latitude}, ${updatedStation.longitude}");
+        print("COORDENADAS EXACTAS SACADAS DE LA URL: ${updatedStation.addressUrl}");
+        print("-----------");
+        try{
         BitmapDescriptor icon = await _getMarkerIcon(updatedStation.name!);
         tempMarkers.add(Marker(
           markerId: MarkerId(updatedStation.id.toString()),
@@ -61,6 +66,9 @@ class _GasStationListState extends State<GasStationList> {
                 'Precio del ${widget.favoriteFuelType}: ${updatedStation.pricePerLiter}\nDistancia: ${updatedStation.distance}',
           ),
         ));
+        }catch(e2){
+          print('ERROR PLACING MARKERS: $e2');
+        }
       } catch (e) {
         print('Error fetching coordinates: $e');
       }
@@ -81,9 +89,9 @@ class _GasStationListState extends State<GasStationList> {
       } else if (stationName.toLowerCase().contains("bp")) {
         imagePath = 'imgs/gas_station_img/markerBP.png';
       } else if (stationName.toLowerCase().contains("repsol")) {
-        imagePath = 'imgs/gas_station_img/markerRepsol.png'; // Corrected path
+        imagePath = 'imgs/gas_station_img/markerRepsol.png'; 
       } else if (stationName.toLowerCase().contains("shell")) {
-        imagePath = 'imgs/gas_station_img/markerShell.png'; // Corrected path
+        imagePath = 'imgs/gas_station_img/markerShell.png'; 
       } else {
         imagePath = 'imgs/gas_station_img/default_station.png';
       }
@@ -91,9 +99,7 @@ class _GasStationListState extends State<GasStationList> {
           const ImageConfiguration(size: Size(30, 30)), imagePath,
           mipmaps: false);
     } catch (e) {
-      print("ERROR EN EL _GET-MARKER-ICON: ${e}");
       return BitmapDescriptor.defaultMarker;
-      ;
     }
   }
 
