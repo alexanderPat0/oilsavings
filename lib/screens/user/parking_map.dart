@@ -1,5 +1,7 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:oilsavings/models/ParkingModel.dart';
+import 'package:oilsavings/screens/user/reviewScreen.dart';
 import 'package:oilsavings/services/parkingService.dart';
 
 class ParkingList extends StatefulWidget {
@@ -21,6 +23,8 @@ class ParkingList extends StatefulWidget {
 class _ParkingListState extends State<ParkingList> {
   List<ParkingData> _parkings = [];
   bool _isLoading = true;
+    final String userId = FirebaseAuth.instance.currentUser!.uid;
+
   final ParkingService _parkingService = ParkingService();
 
   @override
@@ -88,6 +92,20 @@ class _ParkingListState extends State<ParkingList> {
                   child: ExpansionTile(
                     title: Text(parking.name ?? 'Name not available'),
                     subtitle: Text(parking.vicinity ?? 'No address available'),
+                    trailing: IconButton(
+                      icon: const Icon(Icons.rate_review),
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ReviewScreen(
+                              placeId: parking.placeId,
+                              userId: userId,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
                     children: <Widget>[
                       Padding(
                         padding: const EdgeInsets.all(16.0),

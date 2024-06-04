@@ -25,6 +25,8 @@ class GasStationList extends StatefulWidget {
 class _GasStationListState extends State<GasStationList> {
   bool _isLoading = true;
   final apiKey = 'AIzaSyC4EClbyk-lhTAV0qURaU8uUdHxSeiMuhA';
+  // Porque como hasta el state no lo uso, me da error por variable sin usar.
+  // ignore: unused_field
   List<GasStationData>? _stations;
   final GeocodingService _geocodingService = GeocodingService();
   late GoogleMapController mapController;
@@ -50,12 +52,13 @@ class _GasStationListState extends State<GasStationList> {
     for (var station in stations) {
       try {
         var updatedStation = await _geocodingService.fetchCoordinates(station);
-        print("-----------");
-        print(
-            "COORDENADAS COLOCADAS POR LA API: ${updatedStation.latitude}, ${updatedStation.longitude}");
-        print(
-            "COORDENADAS EXACTAS SACADAS DE LA URL: ${updatedStation.addressUrl}");
-        print("-----------");
+        // Comprobar si las coordenadas de la API son mejores (mas exactas) que las de la URL
+        // print("-----------");
+        // print(
+        //     "COORDENADAS COLOCADAS POR LA API: ${updatedStation.latitude}, ${updatedStation.longitude}");
+        // print(
+        //     "COORDENADAS EXACTAS SACADAS DE LA URL: ${updatedStation.addressUrl}");
+        // print("-----------");
         try {
           // BitmapDescriptor icon = await _getMarkerIcon(updatedStation.name!);
           tempMarkers.add(Marker(

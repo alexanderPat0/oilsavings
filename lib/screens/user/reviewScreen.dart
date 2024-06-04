@@ -41,13 +41,12 @@ class _ReviewScreenState extends State<ReviewScreen> {
           _isLoaded = true;
         });
       } else {
-        // No hay revisión previa por este usuario para este lugar
         setState(() {
           _isLoaded = true;
         });
       }
     } else {
-      // No hay datos en la base de datos para esta consulta
+      
       setState(() {
         _isLoaded = true;
       });
@@ -58,20 +57,20 @@ class _ReviewScreenState extends State<ReviewScreen> {
   Widget build(BuildContext context) {
     if (!_isLoaded) {
       return Scaffold(
-        appBar: AppBar(title: Text('Loading...')),
-        body: Center(child: CircularProgressIndicator()),
+        appBar: AppBar(title: const Text('Loading...')),
+        body: const Center(child: CircularProgressIndicator()),
       );
     }
 
     return Scaffold(
-      appBar: AppBar(title: Text('Leave a Review')),
+      appBar: AppBar(title: const Text('Leave a Review!')),
       body: Padding(
-        padding: EdgeInsets.all(8.0),
+        padding: const EdgeInsets.all(8.0),
         child: Column(
           children: [
             TextField(
               controller: _reviewController,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 labelText: 'Review',
                 border: OutlineInputBorder(),
               ),
@@ -91,7 +90,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
             ),
             ElevatedButton(
               onPressed: () => _submitReview(context),
-              child: Text('Submit Review'),
+              child: const Text('Submit Review'),
             ),
           ],
         ),
@@ -112,7 +111,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
     ref.child('${widget.placeId}_${widget.userId}').set(review).then((_) {
       Navigator.pop(context);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Review submitted successfully')),
+        const SnackBar(content: Text('Review submitted successfully')),
       );
     }).catchError((error) {
       ScaffoldMessenger.of(context).showSnackBar(
