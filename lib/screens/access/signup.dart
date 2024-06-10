@@ -1,13 +1,11 @@
-import 'dart:io';
-
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:oilsavings/screens/user/main_screen.dart';
 import 'login.dart';
 import 'package:animate_do/animate_do.dart';
+import 'package:oilsavings/services/userService.dart';
 
-final TextEditingController passwordController = TextEditingController();
-final TextEditingController cpasswordController = TextEditingController();
+final UserService _userServices = UserService();
 
 class TextFieldDemo extends StatelessWidget {
   const TextFieldDemo({super.key});
@@ -38,9 +36,12 @@ class TextFormFieldDemoState extends State<TextFormFieldDemo>
   PersonData person = PersonData();
   late FocusNode _name, _email, _password, _retypePassword;
   bool isLoading = false;
+  late ScaffoldMessengerState _scaffoldMessenger;
 
   final TextEditingController nameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+  final TextEditingController cpasswordController = TextEditingController();
 
   @override
   void initState() {
@@ -49,6 +50,12 @@ class TextFormFieldDemoState extends State<TextFormFieldDemo>
     _email = FocusNode();
     _password = FocusNode();
     _retypePassword = FocusNode();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _scaffoldMessenger = ScaffoldMessenger.of(context);
   }
 
   @override
@@ -65,7 +72,7 @@ class TextFormFieldDemoState extends State<TextFormFieldDemo>
   }
 
   void showInSnackBarError(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
+    _scaffoldMessenger.showSnackBar(
       SnackBar(
         content: Row(
           children: [
@@ -81,7 +88,7 @@ class TextFormFieldDemoState extends State<TextFormFieldDemo>
   }
 
   void showInSnackBarSuccess(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
+    _scaffoldMessenger.showSnackBar(
       SnackBar(
         content: Row(
           children: [
@@ -116,7 +123,7 @@ class TextFormFieldDemoState extends State<TextFormFieldDemo>
       showInSnackBarError('Error. Try again');
       return;
     }
-
+    String username = nameController.text.trim();
     String mail = emailController.text.trim();
     String password = passwordController.text.trim();
     String confirmPassword = cpasswordController.text.trim();
@@ -126,8 +133,11 @@ class TextFormFieldDemoState extends State<TextFormFieldDemo>
       return;
     }
 
-    if (mail.isEmpty || password.isEmpty) {
-      showInSnackBarError('Email and password cannot be empty');
+    if (username.isEmpty ||
+        mail.isEmpty ||
+        password.isEmpty ||
+        confirmPassword.isEmpty) {
+      showInSnackBarError('Some data might be missing');
       return;
     }
 
@@ -136,9 +146,8 @@ class TextFormFieldDemoState extends State<TextFormFieldDemo>
     });
 
     try {
-      final credential = await FirebaseAuth.instance
-          .createUserWithEmailAndPassword(email: mail, password: password);
-      showInSnackBarSuccess('User registered');
+      await _userServices.signUp(mail, password, username, "Sin Plomo 95");
+      showInSnackBarSuccess('User registered successfully!');
       if (mounted) {
         Navigator.pushReplacement(
           context,
@@ -156,7 +165,7 @@ class TextFormFieldDemoState extends State<TextFormFieldDemo>
       }
       showInSnackBarError(errorMessage);
     } catch (e) {
-      showInSnackBarError('An error occurred. Please try again.');
+      showInSnackBarError('An error occurred. Please try again. ');
     } finally {
       if (mounted) {
         setState(() {
