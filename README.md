@@ -1,5 +1,21 @@
-# oilsavings
+**Repositorio de la App Móvil de OilSavings.\
+**\
+Este repositorio contiene la aplicación móvil de OilSavings. En la aplicación móvil, solo hay funcionalidad de usuarios. Nada de control administrativo. Para eso está la página web.
 
-https://pub.dev/documentation/flutter_sliding_panel/latest/ para mostrar las reviews en las paginas
-https://github.com/savicprvoslav/Spring-Boot-starter spring boot con firebase 
-carousel_slider 4.2.1 copy "carousel_slider: ^4.2.1" to clipboard
+**Algunos usuarios:**\
+**Usuario 1:**
+
+Email:
+
+Contraseña:
+
+**Usuario 2:**
+
+Email:
+
+Contraseña:
+
+**Usuario 3:\
+**Email:
+
+Contraseña:
