@@ -1,5 +1,7 @@
+import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:location/location.dart';
 import 'package:oilsavings/models/GasStationModel.dart';
 import 'package:oilsavings/services/addressCoordsService.dart';
 import 'package:oilsavings/services/gasStationService.dart';
@@ -32,10 +34,55 @@ class _GasStationListState extends State<GasStationList> {
   late GoogleMapController mapController;
   Set<Marker> markers = {};
 
+  late Location _location;
+  bool _locationServiceEnabled = false;
+  PermissionStatus _permissionGranted = PermissionStatus.denied;
+  LocationData? _locationData;
+
   @override
   void initState() {
     super.initState();
+    _location = new Location();
+    _initializeLocation();
     _fetchGasStations();
+  }
+
+  Future<void> _initializeLocation() async {
+    _locationServiceEnabled = await _location.serviceEnabled();
+    if (!_locationServiceEnabled) {
+      _locationServiceEnabled = await _location.requestService();
+      if (!_locationServiceEnabled) {
+        return;
+      }
+    }
+
+    _permissionGranted = await _location.hasPermission();
+    if (_permissionGranted == PermissionStatus.denied) {
+      _permissionGranted = await _location.requestPermission();
+      if (_permissionGranted != PermissionStatus.granted) {
+        return;
+      }
+    }
+
+    _locationData = await _location.getLocation();
+  }
+
+  void _onMapCreated(GoogleMapController controller) {
+    mapController = controller;
+    if (_locationData != null) {
+      _updateUserLocation(_locationData!);
+    }
+  }
+
+  void _updateUserLocation(LocationData locationData) {
+    setState(() {
+      markers.add(Marker(
+        markerId: const MarkerId("user_location"),
+        position: LatLng(locationData.latitude!, locationData.longitude!),
+        infoWindow: const InfoWindow(title: "Your location"),
+        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
+      ));
+    });
   }
 
   void _fetchGasStations() async {
@@ -69,7 +116,7 @@ class _GasStationListState extends State<GasStationList> {
             infoWindow: InfoWindow(
               title: updatedStation.name,
               snippet:
-                  'Precio del ${widget.favoriteFuelType}: ${updatedStation.pricePerLiter}\nDistancia: ${updatedStation.distance}',
+                  'Precio del ${widget.favoriteFuelType}: ${updatedStation.pricePerLiter}',
             ),
           ));
         } catch (e2) {
@@ -110,16 +157,23 @@ class _GasStationListState extends State<GasStationList> {
   //   }
   // }
 
-  void _onMapCreated(GoogleMapController controller) {
-    mapController = controller;
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Gasolineras Cercanas")),
+      appBar: AppBar(title: const Text("Gas Stations")),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? Center(
+              child: DefaultTextStyle(
+                style: const TextStyle(fontSize: 20.0, color: Colors.black),
+                child: AnimatedTextKit(
+                  animatedTexts: [
+                    WavyAnimatedText('Loading gas stations...'),
+                    WavyAnimatedText("Maybe it's taking too long..."),
+                  ],
+                  isRepeatingAnimation: true,
+                ),
+              ),
+            )
           : GoogleMap(
               onMapCreated: _onMapCreated,
               initialCameraPosition: CameraPosition(

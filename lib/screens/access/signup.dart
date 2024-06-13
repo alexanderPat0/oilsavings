@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:oilsavings/screens/user/main_screen.dart';
 import 'login.dart';
 import 'package:animate_do/animate_do.dart';
@@ -376,7 +377,13 @@ class TextFormFieldDemoState extends State<TextFormFieldDemo>
                         FadeInUp(
                           duration: const Duration(milliseconds: 1600),
                           child: isLoading
-                              ? const CircularProgressIndicator()
+                              ? Center(
+                                  child:
+                                      LoadingAnimationWidget.fourRotatingDots(
+                                    color: Colors.black,
+                                    size: 100,
+                                  ),
+                                )
                               : MaterialButton(
                                   onPressed: _handleSubmitted,
                                   height: 50,

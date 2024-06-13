@@ -1,8 +1,10 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:oilsavings/models/CarWashModel.dart';
 import 'package:oilsavings/screens/user/reviewScreen.dart';
 import 'package:oilsavings/services/carWashService.dart';
+import 'package:oilsavings/services/userService.dart';
 
 class CarWashList extends StatefulWidget {
   final double latitude;
@@ -22,6 +24,8 @@ class CarWashList extends StatefulWidget {
 
 class _CarWashListState extends State<CarWashList> {
   List<CarWashData> _stations = [];
+  String _username = "User not available"; // Valor predeterminado
+  final UserService _userService = UserService();
   bool _isLoading = true;
   final String userId = FirebaseAuth.instance.currentUser!.uid;
   final CarWashService _carWashService = CarWashService();
@@ -30,6 +34,16 @@ class _CarWashListState extends State<CarWashList> {
   void initState() {
     super.initState();
     _fetchCarWashData();
+    _fetchUsername();
+  }
+
+  Future<void> _fetchUsername() async {
+    try {
+      _username = await _userService.getUsername();
+    } catch (e) {
+      print("Failed to fetch username: $e");
+      // Maneja errores, por ejemplo mostrando un mensaje si es necesario
+    }
   }
 
   Future<void> _fetchCarWashData() async {
@@ -60,11 +74,15 @@ class _CarWashListState extends State<CarWashList> {
   Widget build(BuildContext context) {
     if (_isLoading) {
       return Scaffold(
-        appBar: AppBar(
-          title: const Text('Nearby Car Wash'),
-        ),
-        body: const Center(child: CircularProgressIndicator()),
-      );
+          appBar: AppBar(
+            title: const Text('Nearby Car Wash'),
+          ),
+          body: Center(
+            child: LoadingAnimationWidget.fourRotatingDots(
+              color: Colors.orange,
+              size: 200,
+            ),
+          ));
     }
 
     if (_stations.isEmpty) {
@@ -92,7 +110,7 @@ class _CarWashListState extends State<CarWashList> {
                     title: Text(station.name ?? 'Name not available'),
                     subtitle: Text(station.vicinity ?? 'No address available'),
                     trailing: IconButton(
-                      icon: Icon(Icons.rate_review),
+                      icon: const Icon(Icons.rate_review),
                       onPressed: () {
                         Navigator.push(
                           context,
@@ -100,6 +118,9 @@ class _CarWashListState extends State<CarWashList> {
                             builder: (context) => ReviewScreen(
                               placeId: station.placeId,
                               userId: userId,
+                              username: _username,
+                              placeName:
+                                  station.name ?? 'Parking name not available.',
                             ),
                           ),
                         );

@@ -1,7 +1,9 @@
 import 'dart:async';
+import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:oilsavings/screens/user/gasStation_map.dart';
 import 'package:oilsavings/screens/user/parking_map.dart';
@@ -51,13 +53,13 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   void _startLoadingTextAnimation() {
-    Timer.periodic(Duration(seconds: 1), (Timer timer) {
+    Timer.periodic(const Duration(seconds: 1), (Timer timer) {
       if (!_isLoading) {
         timer.cancel();
       } else {
         setState(() {
           _dotCount = (_dotCount % 3) + 1;
-          _loadingText = "Loading" + "." * _dotCount;
+          _loadingText = "Loading${"." * _dotCount}";
         });
       }
     });
@@ -454,12 +456,16 @@ class _MainScreenState extends State<MainScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            const CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
+            DefaultTextStyle(
+              style: const TextStyle(fontSize: 30.0, color: Colors.black),
+              child: AnimatedTextKit(
+                animatedTexts: [
+                  WavyAnimatedText('Loading...'),
+                  WavyAnimatedText('Look at the waves'),
+                ],
+                isRepeatingAnimation: true,
+              ),
             ),
-            const SizedBox(height: 20),
-            Text(_loadingText,
-                style: const TextStyle(fontSize: 24, color: Colors.blue)),
           ],
         ),
       ),

@@ -8,8 +8,6 @@ class GeocodingService {
     RegExp regExp = RegExp(r'daddr=([^&]+)');
     String url = station.addressUrl!;
 
-    print("URL LLAMADA PARA CONSEGUIR LAS COORDS EXACTAS: $url");
-
     RegExpMatch? match = regExp.firstMatch(url);
 
     if (match != null) {
@@ -46,8 +44,7 @@ class GeocodingService {
       "$lat,$long",
       language: 'es',
     );
-    print(
-        "REVERSED SEARCH RESULTS ${reversedSearchResults.results.elementAt(0)}");
+
     if (reversedSearchResults.results.isNotEmpty) {
       return reversedSearchResults.results.elementAt(0).formattedAddress;
     } else {
