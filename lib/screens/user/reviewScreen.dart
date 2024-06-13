@@ -67,7 +67,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
     Query ref = FirebaseDatabase.instance
         .ref('placeReview')
         .orderByChild('placeIduserId')
-        .equalTo('${widget.placeId}_${widget.userId}');
+        .equalTo('${widget.placeId}${widget.userId}');
 
     DatabaseEvent event = await ref.once();
 
