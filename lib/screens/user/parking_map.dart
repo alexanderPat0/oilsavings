@@ -1,8 +1,10 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:oilsavings/models/ParkingModel.dart';
 import 'package:oilsavings/screens/user/reviewScreen.dart';
 import 'package:oilsavings/services/parkingService.dart';
+import 'package:oilsavings/services/userService.dart';
 
 class ParkingList extends StatefulWidget {
   final double latitude;
@@ -23,14 +25,24 @@ class ParkingList extends StatefulWidget {
 class _ParkingListState extends State<ParkingList> {
   List<ParkingData> _parkings = [];
   bool _isLoading = true;
-    final String userId = FirebaseAuth.instance.currentUser!.uid;
-
+  String _username = "User not available"; // Valor predeterminado
+  final UserService _userService = UserService();
+  final String userId = FirebaseAuth.instance.currentUser!.uid;
   final ParkingService _parkingService = ParkingService();
 
   @override
   void initState() {
     super.initState();
     _fetchParkingData();
+    _fetchUsername();
+  }
+
+  Future<void> _fetchUsername() async {
+    try {
+      _username = await _userService.getUsername();
+    } catch (e) {
+      print("Failed to fetch username: $e");
+    }
   }
 
   Future<void> _fetchParkingData() async {
@@ -62,16 +74,21 @@ class _ParkingListState extends State<ParkingList> {
     if (_isLoading) {
       return Scaffold(
         appBar: AppBar(
-          title: const Text('Nearby parking'),
+          title: const Text('Nearby parkings'),
         ),
-        body: const Center(child: CircularProgressIndicator()),
+        body: Center(
+          child: LoadingAnimationWidget.fourRotatingDots(
+            color: Colors.orange,
+            size: 150,
+          ),
+        ),
       );
     }
 
     if (_parkings.isEmpty) {
       return Scaffold(
         appBar: AppBar(
-          title: const Text('Nearby  Parking'),
+          title: const Text('Nearby  Parkings'),
         ),
         body: const Center(child: Text('No  Parking locations found.')),
       );
@@ -79,7 +96,7 @@ class _ParkingListState extends State<ParkingList> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Nearby  Parking'),
+        title: const Text('Nearby  Parkings'),
       ),
       body: Column(
         children: [
@@ -101,6 +118,9 @@ class _ParkingListState extends State<ParkingList> {
                             builder: (context) => ReviewScreen(
                               placeId: parking.placeId,
                               userId: userId,
+                              username: _username,
+                              placeName:
+                                  parking.name ?? 'Parking name not available.',
                             ),
                           ),
                         );
