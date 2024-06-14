@@ -10,16 +10,16 @@ Además de información acerca del precio de tu combustible deseado. Y algo de i
 
 Email: usuario1@gmail.com
 
-Contraseña: passwordadmin1
+Contraseña: usuario1
 
 ### Usuario 2:
 
 Email: usuario2@gmail.com
 
-Contraseña: passwordadmin2
+Contraseña: usuario2
 
 ### Usuario 3:
 
 Email: usuario3@gmail.com
 
-Contraseña: passwordadmin3
+Contraseña: usuario3
