@@ -8,17 +8,18 @@ Además de información acerca del precio de tu combustible deseado. Y algo de i
 ## Algunos usuarios:
 ### Usuario 1:
 
-Email:
+Email: usuario1@gmail.com
 
-Contraseña:
+Contraseña: passwordadmin1
 
 ### Usuario 2:
 
-Email:
+Email: usuario2@gmail.com
 
-Contraseña:
+Contraseña: passwordadmin2
 
 ### Usuario 3:
-Email:
 
-Contraseña:
+Email: usuario3@gmail.com
+
+Contraseña: passwordadmin3
