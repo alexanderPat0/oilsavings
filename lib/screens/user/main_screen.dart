@@ -118,6 +118,9 @@ class _MainScreenState extends State<MainScreen> {
         );
         onSuccess();
       } else {
+        setState(() {
+          _isLoading = false; // Establecer la carga a true
+        });
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text("Location data is not available. Please try again."),
@@ -126,6 +129,9 @@ class _MainScreenState extends State<MainScreen> {
         );
       }
     } else {
+      setState(() {
+        _isLoading = false; // Establecer la carga a true
+      });
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text(
@@ -461,7 +467,7 @@ class _MainScreenState extends State<MainScreen> {
               child: AnimatedTextKit(
                 animatedTexts: [
                   WavyAnimatedText('Loading...'),
-                  WavyAnimatedText('Look at the waves'),
+                  WavyAnimatedText('Loading...'),
                 ],
                 isRepeatingAnimation: true,
               ),
